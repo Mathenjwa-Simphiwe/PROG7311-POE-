@@ -13,8 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ─── DATABASE ──────────────────────────────────────────────────────────────
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var useInMemory      = builder.Configuration.GetValue<bool>("UseInMemoryDatabase")
-                       || string.IsNullOrEmpty(connectionString);
+var useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase")
+                  || string.IsNullOrEmpty(connectionString);
 
 if (useInMemory)
 {
@@ -30,9 +30,9 @@ else
 // ─── IDENTITY ──────────────────────────────────────────────────────────────
 builder.Services.AddIdentity<Client, IdentityRole>(o =>
 {
-    o.Password.RequireDigit            = true;
-    o.Password.RequiredLength          = 6;
-    o.Password.RequireNonAlphanumeric  = false;
+    o.Password.RequireDigit = true;
+    o.Password.RequiredLength = 6;
+    o.Password.RequireNonAlphanumeric = false;
 })
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
@@ -47,19 +47,19 @@ var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
 builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    o.DefaultChallengeScheme    = JwtBearerDefaults.AuthenticationScheme;
+    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(o =>
 {
     o.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer           = true,
-        ValidateAudience         = true,
-        ValidateLifetime         = true,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer              = builder.Configuration["Jwt:Issuer"],
-        ValidAudience            = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey         = new SymmetricSecurityKey(key)
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
 
@@ -79,22 +79,21 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title       = "TechMove GLMS API",
-        Version     = "v1",
+        Title = "TechMove GLMS API",
+        Version = "v1",
         Description = "Global Logistics Management System REST API. " +
-                      "Authenticate via POST /api/account/login to obtain a Bearer token, " +
-                      "then click 'Authorize' and enter: Bearer {token}"
+                      "POST /api/account/login to get a Bearer token, " +
+                      "then click Authorize and enter: Bearer {your_token}"
     });
 
-    // Enable JWT auth in Swagger UI
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Name= "Authorization",
-        Type= SecuritySchemeType.Http,
-        Scheme= "Bearer",
-        BearerFormat= "JWT",
-        In= ParameterLocation.Header,
-        Description = "Enter your JWT token. Example: Bearer eyJhbGci..."
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter your JWT token (without 'Bearer ' prefix). Example: eyJhbGci..."
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -102,7 +101,11 @@ builder.Services.AddSwaggerGen(c =>
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
             },
             Array.Empty<string>()
         }
@@ -130,7 +133,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
-    name:    "default",
+    name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // ─── SEED DATABASE ─────────────────────────────────────────────────────────

@@ -1,9 +1,33 @@
-﻿@{
+@{
     ViewData["Title"] = "My Contracts";
     Layout = "_Layout";
 }
 
-<h2 class="mb-4"><i class="fas fa-file-contract me-2"></i>My Contracts</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-file-contract me-2"></i>My Contracts</h2>
+</div>
+
+<div id="alertArea"></div>
+
+<!-- Filter -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <div class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label fw-semibold">Filter by Status:</label>
+            </div>
+            <div class="col-auto">
+                <select id="filterStatus" class="form-select form-select-sm" onchange="loadContracts()">
+                    <option value="">All</option>
+                    <option value="0">Draft</option>
+                    <option value="1">Active</option>
+                    <option value="2">Expired</option>
+                    <option value="3">On Hold</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="row" id="contractsRow">
     <div class="col-12 text-center py-4">
@@ -12,88 +36,84 @@
     </div>
 </div>
 
-<!-- Create Request Modal -->
-<div class="modal fade" id="requestModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create Service Request</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="requestForm">
-                <input type="hidden" id="rContractId">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Type</label>
-                        <select id="rType" class="form-select" onchange="toggleFields()">
-                            <option value="0">Freight</option>
-                            <option value="1">Maintenance</option>
-                        </select>
-                    </div>
-                    <div class="mb-3"><label class="form-label">Origin</label><input type="text" id="rOrigin" class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label">Description</label><textarea id="rDescription" class="form-control" required></textarea></div>
-                    <div id="freightFields">
-                        <div class="mb-3"><label class="form-label">Destination</label><input type="text" id="rDestination" class="form-control"></div>
-                        <div class="mb-3"><label class="form-label">Weight (kg)</label><input type="number" id="rWeightKg" class="form-control" step="0.1"></div>
-                    </div>
-                    <div id="maintenanceFields" style="display:none;">
-                        <div class="mb-3"><label class="form-label">Equipment Type</label><input type="text" id="rEquipmentType" class="form-control"></div>
-                        <div class="mb-3"><label class="form-label">Estimated Hours</label><input type="number" id="rEstimatedHours" class="form-control"></div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Submit Request</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 @section Scripts {
-    <script>
-        async function loadContracts() {
-            try {
-                const token = localStorage.getItem('token');
-                const baseUrl = window.location.origin;
-                
-                const response = await fetch(baseUrl + '/api/client/contracts', {
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const contracts = await response.json();
-                    
-                    if (contracts.length === 0) {
-                        document.getElementById('contractsRow').innerHTML =
-                            '<div class="col-12"><div class="alert alert-info">No contracts found</div></div>';
-                        return;
-                    }
-                    
-                    document.getElementById('contractsRow').innerHTML = contracts.map(c => `
-                        <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between">
-                                    <strong>${c.contractNumber}</strong>
-                                    <span class="badge bg-${c.status === 'Active' ? 'success' : 'secondary'}">${c.status}</span>
-                                </div>
-                                <div class="card-body">
-                                    <p><strong>Start:</strong> ${new Date(c.startDate).toLocaleDateString()}</p>
-                                    <p><strong>End:</strong> ${new Date(c.endDate).toLocaleDateString()}</p>
-                                    <p><strong>Level:</strong> ${c.serviceLevel}</p>
-                                </div>
+<script>
+    const token = localStorage.getItem('token');
+    const role  = localStorage.getItem('role');
+    if (!token || role !== 'Client') { window.location.href = '/Account/Login'; }
+
+    function showAlert(type, msg) {
+        document.getElementById('alertArea').innerHTML =
+            `<div class="alert alert-${type} alert-dismissible fade show">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    }
+
+    async function authFetch(url, opts = {}) {
+        return fetch(url, { ...opts, headers: { 'Authorization': 'Bearer ' + token, ...(opts.headers||{}) } });
+    }
+
+    // ── GET ─────────────────────────────────────────────────────────
+    async function loadContracts() {
+        const row = document.getElementById('contractsRow');
+        row.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2">Loading...</p></div>';
+
+        const st  = document.getElementById('filterStatus').value;
+        const url = '/api/client/contracts' + (st !== '' ? '?status=' + st : '');
+
+        try {
+            const res       = await authFetch(url);
+            const contracts = res.ok ? await res.json() : [];
+
+            if (!contracts.length) {
+                row.innerHTML = '<div class="col-12"><div class="alert alert-info"><i class="fas fa-inbox me-2"></i>No contracts found.</div></div>';
+                return;
+            }
+
+            row.innerHTML = contracts.map(c => {
+                const isDraft   = c.status === 'Draft';
+                const statusCls = c.status === 'Active' ? 'success' : c.status === 'Expired' ? 'danger' : c.status === 'On Hold' ? 'warning' : 'secondary';
+                return `
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <strong>${c.contractNumber}</strong>
+                                <span class="badge bg-${statusCls}">${c.status}</span>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-1"><i class="fas fa-calendar-alt me-2 text-muted"></i>
+                                    <strong>Start:</strong> ${new Date(c.startDate).toLocaleDateString()}</p>
+                                <p class="mb-1"><i class="fas fa-calendar-check me-2 text-muted"></i>
+                                    <strong>End:</strong> ${new Date(c.endDate).toLocaleDateString()}</p>
+                                <p class="mb-0"><i class="fas fa-layer-group me-2 text-muted"></i>
+                                    <strong>Level:</strong> ${c.serviceLevel}</p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                ${isDraft
+                                    ? `<button class="btn btn-sm btn-success w-100" onclick="signContract(${c.contractId},'${c.contractNumber}')">
+                                           <i class="fas fa-signature me-2"></i>Sign & Activate (PATCH)
+                                       </button>`
+                                    : `<span class="text-muted small"><i class="fas fa-info-circle me-1"></i>
+                                           ${c.status === 'Active' ? 'Contract is active — raise requests from <a href="/Client/Requests">My Requests</a>.' : 'Contract is ' + c.status.toLowerCase() + '.'}
+                                       </span>`}
                             </div>
                         </div>
-                    `).join('');
-                }
-            } catch (err) {
-                console.error('Error:', err);
-            }
+                    </div>`;
+            }).join('');
+        } catch {
+            row.innerHTML = '<div class="col-12"><div class="alert alert-danger">Network error loading contracts.</div></div>';
         }
-        
-        loadContracts();
-    </script>
+    }
+
+    // ── PATCH (sign/activate) ────────────────────────────────────────
+    async function signContract(id, number) {
+        if (!confirm(`Sign and activate contract ${number}?`)) return;
+        try {
+            const res  = await authFetch(`/api/client/contracts/${id}/sign`, { method: 'PATCH' });
+            const data = await res.json();
+            showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Contract activated!' : 'Failed.'));
+            if (res.ok) loadContracts();
+        } catch { showAlert('danger', 'Network error.'); }
+    }
+
+    loadContracts();
+</script>
 }

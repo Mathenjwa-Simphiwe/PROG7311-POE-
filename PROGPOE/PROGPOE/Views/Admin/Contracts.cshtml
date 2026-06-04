@@ -12,9 +12,7 @@
 
 <!-- Filter Card -->
 <div class="card mb-4">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Contracts</h5>
-    </div>
+    <div class="card-header"><h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Contracts</h5></div>
     <div class="card-body">
         <div class="row g-3">
             <div class="col-md-4">
@@ -33,18 +31,16 @@
                     <option value="1">Active</option>
                     <option value="2">Expired</option>
                     <option value="3">On Hold</option>
+                    <option value="4">Terminated</option>
                 </select>
             </div>
             <div class="col-md-1 d-flex align-items-end">
-                <button class="btn btn-primary w-100" onclick="loadContracts()">
-                    <i class="fas fa-search"></i>
-                </button>
+                <button class="btn btn-primary w-100" onclick="loadContracts()"><i class="fas fa-search"></i></button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Alert area -->
 <div id="alertArea"></div>
 
 <!-- Contracts Table -->
@@ -54,30 +50,21 @@
             <table class="table table-hover mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th>Contract #</th>
-                        <th>Client</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Service Level</th>
-                        <th>Status</th>
-                        <th>Agreement</th>
-                        <th>Actions</th>
+                        <th>Contract #</th><th>Client</th><th>Start</th><th>End</th>
+                        <th>Level</th><th>Status</th><th>PDF</th><th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="contractsBody">
-                    <tr>
-                        <td colspan="8" class="text-center py-4">
-                            <div class="spinner-border text-primary"></div>
-                            <p class="mt-2 mb-0">Loading contracts...</p>
-                        </td>
-                    </tr>
+                    <tr><td colspan="8" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div><p class="mt-2 mb-0">Loading...</p>
+                    </td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- CREATE CONTRACT MODAL -->
+<!-- CREATE MODAL -->
 <div class="modal fade" id="createModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -89,24 +76,21 @@
                 <div id="createAlert"></div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Client <span class="text-danger">*</span></label>
-                    <select id="clientSelect" class="form-select" required>
-                        <option value="">Loading clients...</option>
-                    </select>
-                    <div class="form-text">Select the client this contract belongs to.</div>
+                    <select id="clientSelect" class="form-select"></select>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Start Date <span class="text-danger">*</span></label>
-                        <input type="date" id="cStartDate" class="form-control" required>
+                        <input type="date" id="cStartDate" class="form-control">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">End Date <span class="text-danger">*</span></label>
-                        <input type="date" id="cEndDate" class="form-control" required>
+                        <input type="date" id="cEndDate" class="form-control">
                     </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Service Level <span class="text-danger">*</span></label>
-                    <select id="cServiceLevel" class="form-select" required>
+                    <select id="cServiceLevel" class="form-select">
                         <option value="0">Standard</option>
                         <option value="1">Premium</option>
                         <option value="2">Enterprise</option>
@@ -115,12 +99,11 @@
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Signed Agreement (PDF)</label>
                     <input type="file" id="cAgreement" class="form-control" accept=".pdf">
-                    <div class="form-text">Optional — upload a signed PDF agreement.</div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="createBtn" onclick="submitCreate()">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-success" id="createBtn" onclick="submitCreate()">
                     <i class="fas fa-save me-2"></i>Create Contract
                 </button>
             </div>
@@ -128,31 +111,65 @@
     </div>
 </div>
 
-<!-- CHANGE STATUS MODAL -->
-<div class="modal fade" id="statusModal" tabindex="-1">
+<!-- EDIT MODAL (PUT) -->
+<div class="modal fade" id="editModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-exchange-alt me-2"></i>Change Contract Status</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Contract</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-3">Contract: <strong id="statusContractNumber"></strong></p>
+                <div id="editAlert"></div>
+                <p class="mb-2 text-muted">Contract: <strong id="editContractNumber"></strong></p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" id="eStartDate" class="form-control">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">End Date</label>
+                        <input type="date" id="eEndDate" class="form-control">
+                    </div>
+                </div>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">New Status</label>
-                    <select id="newStatus" class="form-select">
-                        <option value="0">Draft</option>
-                        <option value="1">Active</option>
-                        <option value="2">Expired</option>
-                        <option value="3">On Hold</option>
+                    <label class="form-label">Service Level</label>
+                    <select id="eServiceLevel" class="form-select">
+                        <option value="0">Standard</option>
+                        <option value="1">Premium</option>
+                        <option value="2">Enterprise</option>
                     </select>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="submitStatusChange()">
-                    <i class="fas fa-check me-2"></i>Update Status
-                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" onclick="submitEdit()"><i class="fas fa-save me-2"></i>Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- STATUS MODAL (PATCH) -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-exchange-alt me-2"></i>Update Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Contract: <strong id="statusContractNumber"></strong></p>
+                <select id="newStatus" class="form-select">
+                    <option value="0">Draft</option>
+                    <option value="1">Active</option>
+                    <option value="2">Expired</option>
+                    <option value="3">On Hold</option>
+                    <option value="4">Terminated</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-warning" onclick="submitStatusChange()"><i class="fas fa-check me-2"></i>Update</button>
             </div>
         </div>
     </div>
@@ -162,68 +179,95 @@
 <script>
     const token = localStorage.getItem('token');
     const role  = localStorage.getItem('role');
-
     if (!token || role !== 'Admin') { window.location.href = '/Account/Login'; }
 
-    let currentContractId = null;
+    let currentId = null;
 
-    function statusBadge(s) {
-        const m = { Draft:'secondary', Active:'success', Expired:'danger', 'On Hold':'warning', OnHold:'warning' };
-        return '<span class="badge bg-' + (m[s]||'secondary') + '">' + s + '</span>';
-    }
-    function levelBadge(l) {
+    const statusBadge = s => {
+        const m = { Draft:'secondary', Active:'success', Expired:'danger', 'On Hold':'warning', OnHold:'warning', Terminated:'dark' };
+        return `<span class="badge bg-${m[s]||'secondary'}">${s}</span>`;
+    };
+    const levelBadge = l => {
         const m = { Standard:'info', Premium:'primary', Enterprise:'dark' };
-        return '<span class="badge bg-' + (m[l]||'secondary') + '">' + l + '</span>';
+        return `<span class="badge bg-${m[l]||'secondary'}">${l}</span>`;
+    };
+    const fmtDate = d => new Date(d).toLocaleDateString();
+    const svMap   = { Draft:'0', Active:'1', Expired:'2', OnHold:'3', 'On Hold':'3', Terminated:'4' };
+    const slMap   = { Standard:'0', Premium:'1', Enterprise:'2' };
+
+    async function authFetch(url, opts = {}) {
+        return fetch(url, { ...opts, headers: { 'Authorization': 'Bearer ' + token, ...(opts.headers || {}) } });
     }
 
+    function showAlert(type, html, area = 'alertArea') {
+        document.getElementById(area).innerHTML =
+            `<div class="alert alert-${type} alert-dismissible fade show">${html}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    }
+
+    // ── LOAD (GET) ──────────────────────────────────────────────────
     async function loadContracts() {
         const body = document.getElementById('contractsBody');
         body.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
+
         const p = new URLSearchParams();
         const s = document.getElementById('filterStart').value;
         const e = document.getElementById('filterEnd').value;
         const st = document.getElementById('filterStatus').value;
-        if (s) p.append('startDate', s);
-        if (e) p.append('endDate', e);
+        if (s)  p.append('startDate', s);
+        if (e)  p.append('endDate', e);
         if (st !== '') p.append('status', st);
+
         try {
-            const res = await fetch('/api/admin/contracts?' + p, { headers: { 'Authorization': 'Bearer ' + token } });
-            if (!res.ok) { body.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Failed to load contracts.</td></tr>'; return; }
-            const contracts = await res.json();
-            if (!contracts.length) {
+            const res = await authFetch('/api/admin/contracts?' + p);
+            if (!res.ok) { body.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Failed to load.</td></tr>'; return; }
+            const list = await res.json();
+            if (!list.length) {
                 body.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x d-block mb-2"></i>No contracts found.</td></tr>';
                 return;
             }
-            body.innerHTML = contracts.map(c => '<tr>' +
-                '<td><strong>' + c.contractNumber + '</strong></td>' +
-                '<td>' + (c.clientName || '<span class="text-muted">—</span>') + '</td>' +
-                '<td>' + new Date(c.startDate).toLocaleDateString() + '</td>' +
-                '<td>' + new Date(c.endDate).toLocaleDateString() + '</td>' +
-                '<td>' + levelBadge(c.serviceLevel) + '</td>' +
-                '<td>' + statusBadge(c.status) + '</td>' +
-                '<td>' + (c.hasAgreement ? '<a href="/api/admin/contracts/' + c.contractId + '/download" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i> PDF</a>' : '<span class="text-muted small">None</span>') + '</td>' +
-                '<td><button class="btn btn-sm btn-outline-secondary" onclick="openStatusModal(' + c.contractId + ',\'' + c.contractNumber + '\',\'' + c.status + '\')"><i class="fas fa-exchange-alt"></i> Status</button></td>' +
-                '</tr>').join('');
-        } catch { body.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Network error loading contracts.</td></tr>'; }
+            body.innerHTML = list.map(c => `
+                <tr>
+                    <td><strong>${c.contractNumber}</strong></td>
+                    <td>${c.clientName || '<span class="text-muted">—</span>'}</td>
+                    <td>${fmtDate(c.startDate)}</td>
+                    <td>${fmtDate(c.endDate)}</td>
+                    <td>${levelBadge(c.serviceLevel)}</td>
+                    <td>${statusBadge(c.status)}</td>
+                    <td>${c.hasAgreement
+                        ? `<a href="/api/admin/contracts/${c.contractId}/download" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>`
+                        : '<span class="text-muted small">None</span>'}</td>
+                    <td class="d-flex gap-1">
+                        <button class="btn btn-sm btn-outline-secondary" title="PATCH Status"
+                            onclick="openStatusModal(${c.contractId},'${c.contractNumber}','${c.status}')">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" title="PUT Edit"
+                            onclick="openEditModal(${c.contractId},'${c.contractNumber}','${c.startDate}','${c.endDate}','${c.serviceLevel}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" title="DELETE"
+                            onclick="deleteContract(${c.contractId},'${c.contractNumber}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>`).join('');
+        } catch { body.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Network error.</td></tr>'; }
     }
 
+    // ── CREATE (POST) ───────────────────────────────────────────────
     async function loadClients() {
         const sel = document.getElementById('clientSelect');
-        sel.innerHTML = '<option value="">Loading clients...</option>';
-        try {
-            const res = await fetch('/api/admin/clients', { headers: { 'Authorization': 'Bearer ' + token } });
-            if (!res.ok) throw new Error();
-            const clients = await res.json();
-            sel.innerHTML = clients.length
-                ? '<option value="">— Select a client —</option>' + clients.map(c => '<option value="' + c.id + '">' + c.fullName + ' (' + c.email + ')</option>').join('')
-                : '<option value="">No clients registered yet</option>';
-        } catch { sel.innerHTML = '<option value="">Failed to load clients</option>'; }
+        sel.innerHTML = '<option value="">Loading...</option>';
+        const res = await authFetch('/api/admin/clients');
+        const clients = res.ok ? await res.json() : [];
+        sel.innerHTML = clients.length
+            ? '<option value="">— Select client —</option>' + clients.map(c => `<option value="${c.id}">${c.fullName} (${c.email})</option>`).join('')
+            : '<option value="">No clients found</option>';
     }
 
     function openCreateModal() {
-        document.getElementById('clientSelect').innerHTML = '<option value="">Loading...</option>';
         document.getElementById('cStartDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('cEndDate').value = '';
+        document.getElementById('cEndDate').value   = '';
         document.getElementById('cServiceLevel').value = '0';
         document.getElementById('cAgreement').value = '';
         document.getElementById('createAlert').innerHTML = '';
@@ -236,14 +280,13 @@
 
     async function submitCreate() {
         const alertEl = document.getElementById('createAlert');
-        alertEl.innerHTML = '';
         const clientId = document.getElementById('clientSelect').value;
         const startDate = document.getElementById('cStartDate').value;
-        const endDate = document.getElementById('cEndDate').value;
+        const endDate   = document.getElementById('cEndDate').value;
         const serviceLevel = document.getElementById('cServiceLevel').value;
         const agreementFile = document.getElementById('cAgreement').files[0];
 
-        if (!clientId) { alertEl.innerHTML = '<div class="alert alert-danger">Please select a client.</div>'; return; }
+        if (!clientId)  { alertEl.innerHTML = '<div class="alert alert-danger">Please select a client.</div>'; return; }
         if (!startDate || !endDate) { alertEl.innerHTML = '<div class="alert alert-danger">Please fill in both dates.</div>'; return; }
         if (new Date(endDate) <= new Date(startDate)) { alertEl.innerHTML = '<div class="alert alert-danger">End date must be after start date.</div>'; return; }
 
@@ -251,63 +294,95 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
 
-        try {
-            const fd = new FormData();
-            fd.append('ClientId', clientId);
-            fd.append('StartDate', startDate);
-            fd.append('EndDate', endDate);
-            fd.append('ServiceLevel', serviceLevel);
-            if (agreementFile) fd.append('Agreement', agreementFile);
+        const fd = new FormData();
+        fd.append('ClientId', clientId);
+        fd.append('StartDate', startDate);
+        fd.append('EndDate', endDate);
+        fd.append('ServiceLevel', serviceLevel);
+        if (agreementFile) fd.append('Agreement', agreementFile);
 
-            const res = await fetch('/api/admin/contracts', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token },
-                body: fd
-            });
+        try {
+            const res  = await authFetch('/api/admin/contracts', { method: 'POST', body: fd });
             const data = await res.json();
             if (res.ok) {
                 bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
-                showAlert('success', '<i class="fas fa-check-circle me-2"></i>Contract <strong>' + data.contractNumber + '</strong> created successfully!');
+                showAlert('success', `<i class="fas fa-check-circle me-2"></i>Contract <strong>${data.contractNumber}</strong> created!`);
                 loadContracts();
             } else {
-                alertEl.innerHTML = '<div class="alert alert-danger">' + (data.message || data.title || 'Failed to create contract.') + '</div>';
+                alertEl.innerHTML = `<div class="alert alert-danger">${data.message || 'Failed to create.'}</div>`;
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-save me-2"></i>Create Contract';
             }
         } catch {
-            alertEl.innerHTML = '<div class="alert alert-danger">Network error. Please try again.</div>';
+            alertEl.innerHTML = '<div class="alert alert-danger">Network error.</div>';
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-save me-2"></i>Create Contract';
         }
     }
 
-    const statusValueMap = { Draft:'0', Active:'1', Expired:'2', OnHold:'3', 'On Hold':'3' };
+    // ── EDIT (PUT) ──────────────────────────────────────────────────
+    function openEditModal(id, number, startDate, endDate, serviceLevel) {
+        currentId = id;
+        document.getElementById('editContractNumber').textContent = number;
+        document.getElementById('eStartDate').value    = startDate.split('T')[0];
+        document.getElementById('eEndDate').value      = endDate.split('T')[0];
+        document.getElementById('eServiceLevel').value = slMap[serviceLevel] || '0';
+        document.getElementById('editAlert').innerHTML = '';
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    async function submitEdit() {
+        if (!currentId) return;
+        const body = {
+            startDate:    document.getElementById('eStartDate').value,
+            endDate:      document.getElementById('eEndDate').value,
+            serviceLevel: parseInt(document.getElementById('eServiceLevel').value)
+        };
+        try {
+            const res  = await authFetch(`/api/admin/contracts/${currentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Contract updated.' : 'Update failed.'));
+            if (res.ok) loadContracts();
+        } catch { showAlert('danger', 'Network error.'); }
+    }
+
+    // ── STATUS (PATCH) ──────────────────────────────────────────────
     function openStatusModal(id, number, currentStatus) {
-        currentContractId = id;
+        currentId = id;
         document.getElementById('statusContractNumber').textContent = number;
-        document.getElementById('newStatus').value = statusValueMap[currentStatus] || '0';
+        document.getElementById('newStatus').value = svMap[currentStatus] || '0';
         new bootstrap.Modal(document.getElementById('statusModal')).show();
     }
 
     async function submitStatusChange() {
-        if (!currentContractId) return;
+        if (!currentId) return;
         try {
-            const res = await fetch('/api/admin/contracts/' + currentContractId + '/status', {
-                method: 'PUT',
-                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            const res  = await authFetch(`/api/admin/contracts/${currentId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: parseInt(document.getElementById('newStatus').value) })
             });
             const data = await res.json();
             bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
-            showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Status updated.' : 'Failed to update status.'));
+            showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Status updated.' : 'Failed.'));
             if (res.ok) loadContracts();
-        } catch { showAlert('danger', 'Network error updating status.'); }
+        } catch { showAlert('danger', 'Network error.'); }
     }
 
-    function showAlert(type, html) {
-        const el = document.getElementById('alertArea');
-        el.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible fade show">' + html + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
-        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // ── DELETE ──────────────────────────────────────────────────────
+    async function deleteContract(id, number) {
+        if (!confirm(`Delete contract ${number}? This cannot be undone.`)) return;
+        try {
+            const res  = await authFetch(`/api/admin/contracts/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Deleted.' : 'Delete failed.'));
+            if (res.ok) loadContracts();
+        } catch { showAlert('danger', 'Network error.'); }
     }
 
     loadContracts();

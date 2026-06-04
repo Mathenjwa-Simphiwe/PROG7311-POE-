@@ -60,6 +60,10 @@
               "target": "Package",
               "version": "[10.0.7, )"
             },
+            "Microsoft.AspNetCore.Mvc.Testing": {
+              "target": "Package",
+              "version": "[10.0.8, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[10.0.7, )"
@@ -90,7 +94,7 @@
             },
             "Microsoft.OpenApi": {
               "target": "Package",
-              "version": "[3.5.2, )"
+              "version": "[1.6.14, )"
             },
             "Moq": {
               "target": "Package",
@@ -103,6 +107,10 @@
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
               "version": "[8.17.0, )"
+            },
+            "v24.OpenApi.Models": {
+              "target": "Package",
+              "version": "[2.0.45, )"
             },
             "xunit": {
               "target": "Package",

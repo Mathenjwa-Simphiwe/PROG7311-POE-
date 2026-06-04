@@ -12,13 +12,13 @@
 <div class="card shadow-sm">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="fas fa-filter me-2"></i>Filter by Status</span>
-        <select id="filterStatus" class="form-select w-auto" onchange="renderRequests()">
+        <select id="filterStatus" class="form-select w-auto" onchange="loadRequests()">
             <option value="">All</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Denied">Denied</option>
-            <option value="InProgress">In Progress</option>
-            <option value="Completed">Completed</option>
+            <option value="0">Pending</option>
+            <option value="1">Approved</option>
+            <option value="2">InProgress</option>
+            <option value="3">Completed</option>
+            <option value="4">Denied</option>
         </select>
     </div>
     <div class="card-body p-0">
@@ -26,325 +26,153 @@
             <table class="table table-hover mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th>Request ID</th>
-                        <th>Type</th>
-                        <th>Client</th>
-                        <th>Contract</th>
-                        <th>Description</th>
-                        <th>Base Cost</th>
-                        <th>ZAR / USD</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>ID</th><th>Type</th><th>Contract</th><th>Client</th>
+                        <th>Description</th><th>Cost (ZAR)</th><th>Status</th><th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="requestsBody">
-                    <tr>
-                        <td colspan="10" class="text-center py-4">
-                            <div class="spinner-border text-primary"></div>
-                        </td>
-                    </tr>
+                    <tr><td colspan="8" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                    </td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- Decision Modal (Approve / Deny) -->
+<!-- DECISION MODAL (PATCH approve/decline) -->
 <div class="modal fade" id="decisionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header" id="decisionModalHeader">
-                <h5 class="modal-title" id="decisionModalTitle">Decision</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header" id="decisionHeader">
+                <h5 class="modal-title" id="decisionTitle">Decision</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p><strong>Request ID:</strong> <span id="decisionRequestId"></span></p>
-                <p><strong>Client:</strong> <span id="decisionClientName"></span></p>
+                <p>Request: <strong id="decisionRequestId"></strong></p>
                 <div class="mb-3">
-                    <label for="decisionNotes" class="form-label" id="notesLabel">Notes</label>
-                    <textarea id="decisionNotes" class="form-control" rows="3"
-                              oninput="this.classList.remove('is-invalid')"></textarea>
-                    <div class="invalid-feedback">A reason is required when denying a request.</div>
+                    <label class="form-label">Admin Notes (optional)</label>
+                    <textarea id="adminNotes" class="form-control" rows="3" placeholder="Add notes..."></textarea>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button id="confirmDecisionBtn" class="btn btn-success" onclick="submitDecision()">Confirm</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Detail Modal -->
-<div class="modal fade" id="detailModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Request Details</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="detailBody"></div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button class="btn" id="decisionBtn" onclick="submitDecision()">Confirm</button>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script>
-        const token = localStorage.getItem('token');
-        const role  = localStorage.getItem('role');
+<script>
+    const token = localStorage.getItem('token');
+    const role  = localStorage.getItem('role');
+    if (!token || role !== 'Admin') { window.location.href = '/Account/Login'; }
 
-        if (!token || role !== 'Admin') {
-            window.location.href = '/Account/Login';
-        }
+    let currentRequestId = null;
+    let currentAction    = null;
 
-        const bodyEl   = document.getElementById('requestsBody');
-        const alertEl  = document.getElementById('alertArea');
-        const filterEl = document.getElementById('filterStatus');
+    const statusBadge = s => {
+        const m = { Pending:'warning', Approved:'success', InProgress:'info', Completed:'primary', Denied:'danger' };
+        return `<span class="badge bg-${m[s]||'secondary'}">${s}</span>`;
+    };
+    const typeBadge = t => `<span class="badge bg-${t==='Freight'?'info':'secondary'}">${t}</span>`;
 
-        let currentRequestId = null;
-        let currentAction    = null;
-        let allRequests      = [];
+    async function authFetch(url, opts = {}) {
+        return fetch(url, { ...opts, headers: { 'Authorization': 'Bearer ' + token, ...(opts.headers||{}) } });
+    }
 
-        function authFetch(url, opts = {}) {
-            return fetch(url, {
-                ...opts,
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'application/json',
-                    ...(opts.headers || {})
-                }
-            });
-        }
+    function showAlert(type, msg) {
+        document.getElementById('alertArea').innerHTML =
+            `<div class="alert alert-${type} alert-dismissible fade show">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    }
 
-        async function loadRequests() {
-            bodyEl.innerHTML = `
-                <tr>
-                    <td colspan="10" class="text-center py-4">
-                        <div class="spinner-border text-primary"></div>
-                    </td>
-                </tr>`;
+    // ── GET (load) ──────────────────────────────────────────────────
+    async function loadRequests() {
+        const body = document.getElementById('requestsBody');
+        body.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
 
-            try {
-                const res = await authFetch('/api/admin/service-requests');
+        const st  = document.getElementById('filterStatus').value;
+        const url = '/api/admin/service-requests' + (st !== '' ? '?status=' + st : '');
 
-                // FIX: surface the actual error so you can see what went wrong
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.message || `HTTP ${res.status}`);
-                }
-
-                allRequests = await res.json();
-                renderRequests();
-            } catch (e) {
-                bodyEl.innerHTML = `
-                    <tr>
-                        <td colspan="10" class="text-center text-danger py-4">
-                            Failed to load requests: ${e.message}
-                        </td>
-                    </tr>`;
-            }
-        }
-
-        function renderRequests() {
-            const filter = filterEl.value;
-            const list = filter
-                ? allRequests.filter(r => r.status === filter)
-                : allRequests;
-
-            const statusColors = {
-                Pending:    'warning',
-                Approved:   'success',
-                InProgress: 'info',
-                Completed:  'primary',
-                Denied:     'danger'
-            };
-
+        try {
+            const res  = await authFetch(url);
+            if (!res.ok) { body.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Failed to load.</td></tr>'; return; }
+            const list = await res.json();
             if (!list.length) {
-                bodyEl.innerHTML = `
-                    <tr>
-                        <td colspan="10" class="text-center text-muted py-5">
-                            <i class="fas fa-inbox fa-2x d-block mb-2"></i>
-                            No requests found.
-                        </td>
-                    </tr>`;
+                body.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x d-block mb-2"></i>No requests found.</td></tr>';
                 return;
             }
-
-            bodyEl.innerHTML = list.map(r => {
-                // FIX: use r.type (camelCase) — the API serialises "Type" as "type"
-                const typeName = r.type || '';
-
-                // FIX: guard against null/NaN values crashing the whole render
-                const baseCost  = isNaN(parseFloat(r.cost))           ? '0.00' : parseFloat(r.cost).toFixed(2);
-                const dateStr   = r.requestDate ? new Date(r.requestDate).toLocaleDateString() : '—';
-
-                const zarCell = r.localCostZar
-                    ? `<span class="text-success fw-semibold">
-                            R${parseFloat(r.localCostZar).toFixed(2)}
-                       </span>
-                       <br>
-                       <small class="text-muted">
-                            $${parseFloat(r.usdAmount).toFixed(2)} @@ ${parseFloat(r.exchangeRateUsed).toFixed(4)}
-                       </small>`
-                    : `<span class="text-muted">—</span>`;
-
-                const actions = r.status === 'Pending'
-                    ? `
-                        <button class="btn btn-success btn-sm me-1"
-                            onclick="openDecision(${r.serviceRequestId}, '${r.requestId}', '${(r.clientName || '').replace(/'/g, "\\'")}', 'approve')">
-                            <i class="fas fa-check"></i> Approve
+            body.innerHTML = list.map(r => `
+                <tr>
+                    <td><small class="text-muted">${r.requestId}</small></td>
+                    <td>${typeBadge(r.type)}</td>
+                    <td>${r.contractNumber||'—'}</td>
+                    <td>${r.clientName||'—'}</td>
+                    <td>${r.description}</td>
+                    <td>${r.localCostZar ? 'R ' + Number(r.localCostZar).toFixed(2) : (r.cost ? 'R ' + Number(r.cost).toFixed(2) : '—')}</td>
+                    <td>${statusBadge(r.status)}</td>
+                    <td class="d-flex gap-1">
+                        ${r.status === 'Pending' ? `
+                        <button class="btn btn-sm btn-success" title="PATCH Approve"
+                            onclick="openDecision(${r.serviceRequestId},'${r.requestId}','approve')">
+                            <i class="fas fa-check"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm"
-                            onclick="openDecision(${r.serviceRequestId}, '${r.requestId}', '${(r.clientName || '').replace(/'/g, "\\'")}', 'deny')">
-                            <i class="fas fa-times"></i> Deny
-                        </button>`
-                    : `
-                        <button class="btn btn-outline-secondary btn-sm"
-                            onclick="openDetail(${r.serviceRequestId})">
-                            <i class="fas fa-eye"></i>
+                        <button class="btn btn-sm btn-danger" title="PATCH Decline"
+                            onclick="openDecision(${r.serviceRequestId},'${r.requestId}','decline')">
+                            <i class="fas fa-times"></i>
+                        </button>` : ''}
+                        <button class="btn btn-sm btn-outline-danger" title="DELETE"
+                            onclick="deleteRequest(${r.serviceRequestId},'${r.requestId}')">
+                            <i class="fas fa-trash"></i>
                         </button>
-                        <small class="d-block text-muted mt-1">
-                            ${r.adminNotes ? r.adminNotes.substring(0, 30) + '…' : 'Processed'}
-                        </small>`;
+                    </td>
+                </tr>`).join('');
+        } catch { body.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Network error.</td></tr>'; }
+    }
 
-                return `
-                    <tr>
-                        <td><strong>${r.requestId || '—'}</strong></td>
-                        <td>
-                            <span class="badge bg-${typeName === 'Freight' ? 'primary' : 'warning text-dark'}">
-                                ${typeName}
-                            </span>
-                        </td>
-                        <td>${r.clientName || '—'}</td>
-                        <td>${r.contractNumber || '—'}</td>
-                        <td>
-                            <small>
-                                ${(r.description || '').substring(0, 50)}
-                                ${r.description && r.description.length > 50 ? '…' : ''}
-                            </small>
-                        </td>
-                        <td>R${baseCost}</td>
-                        <td>${zarCell}</td>
-                        <td><small>${dateStr}</small></td>
-                        <td>
-                            <span class="badge bg-${statusColors[r.status] || 'secondary'}">
-                                ${r.status || '—'}
-                            </span>
-                        </td>
-                        <td>${actions}</td>
-                    </tr>`;
-            }).join('');
-        }
+    // ── PATCH (approve/decline) ─────────────────────────────────────
+    function openDecision(id, reqId, action) {
+        currentRequestId = id;
+        currentAction    = action;
+        const isApprove  = action === 'approve';
+        document.getElementById('decisionHeader').className = `modal-header bg-${isApprove?'success':'danger'} text-white`;
+        document.getElementById('decisionTitle').textContent = isApprove ? 'Approve Request' : 'Decline Request';
+        document.getElementById('decisionRequestId').textContent = reqId;
+        document.getElementById('adminNotes').value = '';
+        const btn = document.getElementById('decisionBtn');
+        btn.className   = `btn btn-${isApprove?'success':'danger'}`;
+        btn.textContent = isApprove ? 'Approve' : 'Decline';
+        new bootstrap.Modal(document.getElementById('decisionModal')).show();
+    }
 
-        function openDecision(id, requestId, clientName, action) {
-            currentRequestId = id;
-            currentAction    = action;
+    async function submitDecision() {
+        if (!currentRequestId) return;
+        const url = `/api/admin/service-requests/${currentRequestId}/${currentAction}`;
+        try {
+            const res  = await authFetch(url, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: document.getElementById('adminNotes').value })
+            });
+            const data = await res.json();
+            bootstrap.Modal.getInstance(document.getElementById('decisionModal')).hide();
+            showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Done.' : 'Failed.'));
+            if (res.ok) loadRequests();
+        } catch { showAlert('danger', 'Network error.'); }
+    }
 
-            const isApprove = action === 'approve';
+    // ── DELETE ──────────────────────────────────────────────────────
+    async function deleteRequest(id, reqId) {
+        if (!confirm(`Delete request ${reqId}? This cannot be undone.`)) return;
+        try {
+            const res  = await authFetch(`/api/admin/service-requests/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Deleted.' : 'Failed.'));
+            if (res.ok) loadRequests();
+        } catch { showAlert('danger', 'Network error.'); }
+    }
 
-            document.getElementById('decisionModalHeader').className =
-                `modal-header ${isApprove ? 'bg-success text-white' : 'bg-danger text-white'}`;
-
-            document.getElementById('decisionModalTitle').textContent =
-                isApprove ? '✔ Approve Request' : '✖ Deny Request';
-
-            document.getElementById('decisionRequestId').textContent  = requestId;
-            document.getElementById('decisionClientName').textContent = clientName;
-
-            document.getElementById('notesLabel').textContent =
-                isApprove ? 'Approval notes (optional)' : 'Reason for denial (required)';
-
-            document.getElementById('decisionNotes').value = '';
-            document.getElementById('decisionNotes').classList.remove('is-invalid');
-
-            const btn = document.getElementById('confirmDecisionBtn');
-            btn.className   = `btn ${isApprove ? 'btn-success' : 'btn-danger'}`;
-            btn.textContent = isApprove ? 'Approve' : 'Deny';
-
-            new bootstrap.Modal(document.getElementById('decisionModal')).show();
-        }
-
-        async function submitDecision() {
-            const notes  = document.getElementById('decisionNotes').value.trim();
-            const isDeny = currentAction === 'deny';
-
-            if (isDeny && !notes) {
-                document.getElementById('decisionNotes').classList.add('is-invalid');
-                return;
-            }
-
-            const url = `/api/admin/service-requests/${currentRequestId}/${currentAction}`;
-
-            try {
-                const res  = await authFetch(url, { method: 'PUT', body: JSON.stringify({ notes }) });
-                const data = await res.json();
-
-                bootstrap.Modal.getInstance(document.getElementById('decisionModal')).hide();
-
-                showAlert(
-                    res.ok ? 'success' : 'danger',
-                    `<i class="fas fa-${res.ok ? 'check' : 'times'}-circle me-2"></i>${data.message || 'Done.'}`
-                );
-
-                if (res.ok) loadRequests();
-            } catch {
-                showAlert('danger', 'Network error. Please try again.');
-            }
-        }
-
-        function openDetail(id) {
-            const r = allRequests.find(x => x.serviceRequestId === id);
-            if (!r) return;
-
-            // FIX: use r.type consistently
-            const typeName = r.type || '—';
-
-            document.getElementById('detailBody').innerHTML = `
-                <dl class="row mb-0">
-                    <dt class="col-sm-4">Request ID</dt>  <dd class="col-sm-8">${r.requestId}</dd>
-                    <dt class="col-sm-4">Type</dt>        <dd class="col-sm-8">${typeName}</dd>
-                    <dt class="col-sm-4">Client</dt>      <dd class="col-sm-8">${r.clientName || '—'}</dd>
-                    <dt class="col-sm-4">Contract</dt>    <dd class="col-sm-8">${r.contractNumber || '—'}</dd>
-                    <dt class="col-sm-4">Origin</dt>      <dd class="col-sm-8">${r.origin || '—'}</dd>
-                    <dt class="col-sm-4">Description</dt> <dd class="col-sm-8">${r.description || '—'}</dd>
-                    <dt class="col-sm-4">Base Cost</dt>   <dd class="col-sm-8">R${isNaN(parseFloat(r.cost)) ? '0.00' : parseFloat(r.cost).toFixed(2)}</dd>
-
-                    ${r.usdAmount ? `
-                        <dt class="col-sm-4">USD Amount</dt>
-                        <dd class="col-sm-8">$${parseFloat(r.usdAmount).toFixed(2)}</dd>
-                        <dt class="col-sm-4">ZAR Cost</dt>
-                        <dd class="col-sm-8 text-success fw-bold">R${parseFloat(r.localCostZar).toFixed(2)}</dd>
-                        <dt class="col-sm-4">Exchange Rate</dt>
-                        <dd class="col-sm-8">${parseFloat(r.exchangeRateUsed).toFixed(4)}</dd>
-                    ` : ''}
-
-                    <dt class="col-sm-4">Status</dt>
-                    <dd class="col-sm-8">${r.status || '—'}</dd>
-
-                    ${r.adminNotes ? `
-                        <dt class="col-sm-4">Admin Notes</dt>
-                        <dd class="col-sm-8">${r.adminNotes}</dd>
-                    ` : ''}
-
-                    <dt class="col-sm-4">Date</dt>
-                    <dd class="col-sm-8">${r.requestDate ? new Date(r.requestDate).toLocaleString() : '—'}</dd>
-                </dl>`;
-
-            new bootstrap.Modal(document.getElementById('detailModal')).show();
-        }
-
-        function showAlert(type, html) {
-            alertEl.innerHTML = `
-                <div class="alert alert-${type} alert-dismissible fade show">
-                    ${html}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>`;
-        }
-
-        loadRequests();
-    </script>
+    loadRequests();
+</script>
 }
