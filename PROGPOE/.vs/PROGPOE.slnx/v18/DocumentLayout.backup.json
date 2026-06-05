@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\lab_services_student\\Documents\\GitHub\\PROG7313-POE-\\PROGPOE\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{AA77A8AF-4F79-18DD-5E9B-DE5E8F867568}|PROGPOE\\PROGPOE.csproj|c:\\users\\lab_services_student\\documents\\github\\prog7313-poe-\\progpoe\\progpoe\\tests\\apiintegrationtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AA77A8AF-4F79-18DD-5E9B-DE5E8F867568}|PROGPOE\\PROGPOE.csproj|solutionrelative:progpoe\\tests\\apiintegrationtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{AA77A8AF-4F79-18DD-5E9B-DE5E8F867568}|PROGPOE\\PROGPOE.csproj|c:\\users\\lab_services_student\\documents\\github\\prog7313-poe-\\progpoe\\progpoe\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{AA77A8AF-4F79-18DD-5E9B-DE5E8F867568}|PROGPOE\\PROGPOE.csproj|solutionrelative:progpoe\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA77A8AF-4F79-18DD-5E9B-DE5E8F867568}|PROGPOE\\PROGPOE.csproj|c:\\users\\lab_services_student\\documents\\github\\prog7313-poe-\\progpoe\\progpoe\\tests\\apiintegrationtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA77A8AF-4F79-18DD-5E9B-DE5E8F867568}|PROGPOE\\PROGPOE.csproj|solutionrelative:progpoe\\tests\\apiintegrationtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{AA77A8AF-4F79-18DD-5E9B-DE5E8F867568}|PROGPOE\\PROGPOE.csproj|c:\\users\\lab_services_student\\documents\\github\\prog7313-poe-\\progpoe\\progpoe\\progpoe.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
@@ -184,10 +184,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{AA77A8AF-4F79-18DD-5E9B-DE5E8F867568}|PROGPOE\\PROGPOE.csproj|c:\\users\\lab_services_student\\documents\\github\\prog7313-poe-\\progpoe\\progpoe\\models\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{AA77A8AF-4F79-18DD-5E9B-DE5E8F867568}|PROGPOE\\PROGPOE.csproj|solutionrelative:progpoe\\models\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AA77A8AF-4F79-18DD-5E9B-DE5E8F867568}|PROGPOE\\PROGPOE.csproj|c:\\users\\lab_services_student\\documents\\github\\prog7313-poe-\\progpoe\\progpoe\\migrations\\initialcreate.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{AA77A8AF-4F79-18DD-5E9B-DE5E8F867568}|PROGPOE\\PROGPOE.csproj|solutionrelative:progpoe\\migrations\\initialcreate.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
     }
   ],
   "DocumentGroupContainers": [
@@ -197,17 +193,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "ApiIntegrationTests.cs",
               "DocumentMoniker": "C:\\Users\\lab_services_student\\Documents\\GitHub\\PROG7313-POE-\\PROGPOE\\PROGPOE\\Tests\\ApiIntegrationTests.cs",
               "RelativeDocumentMoniker": "PROGPOE\\Tests\\ApiIntegrationTests.cs",
               "ToolTip": "C:\\Users\\lab_services_student\\Documents\\GitHub\\PROG7313-POE-\\PROGPOE\\PROGPOE\\Tests\\ApiIntegrationTests.cs",
               "RelativeToolTip": "PROGPOE\\Tests\\ApiIntegrationTests.cs",
-              "ViewState": "AgIAAJMAAAAAAAAAAAAYwKcAAAAKAAAAAAAAAA==",
+              "ViewState": "AgIAABAAAAAAAAAAAAAAABkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-04T21:27:44.135Z",
               "EditorCaption": ""
@@ -222,8 +218,7 @@
               "RelativeToolTip": "PROGPOE\\Controllers\\AdminController.cs",
               "ViewState": "AgIAADkBAAAAAAAAAAAewEMBAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:23:22.327Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:23:22.327Z"
             },
             {
               "$type": "Document",
@@ -235,8 +230,7 @@
               "RelativeToolTip": "PROGPOE\\Views\\Admin\\Dashboard.cshtml",
               "ViewState": "AgIAAFcAAAAAAAAAAAAAAGIAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-23T16:19:47.863Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T16:19:47.863Z"
             },
             {
               "$type": "Document",
@@ -248,18 +242,17 @@
               "RelativeToolTip": "PROGPOE\\Views\\Admin\\ServiceRequests.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAALIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-23T16:20:57.113Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T16:20:57.113Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\lab_services_student\\Documents\\GitHub\\PROG7313-POE-\\PROGPOE\\PROGPOE\\Program.cs",
               "RelativeDocumentMoniker": "PROGPOE\\Program.cs",
               "ToolTip": "C:\\Users\\lab_services_student\\Documents\\GitHub\\PROG7313-POE-\\PROGPOE\\PROGPOE\\Program.cs",
               "RelativeToolTip": "PROGPOE\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAQAAAAAAAAAA==",
+              "ViewState": "AgIAAFYAAAAAAAAAAAAnwGEAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-23T17:20:16.101Z",
               "EditorCaption": ""
@@ -272,7 +265,7 @@
               "RelativeDocumentMoniker": "PROGPOE\\PROGPOE.csproj",
               "ToolTip": "C:\\Users\\lab_services_student\\Documents\\GitHub\\PROG7313-POE-\\PROGPOE\\PROGPOE\\PROGPOE.csproj",
               "RelativeToolTip": "PROGPOE\\PROGPOE.csproj",
-              "ViewState": "AgIAABEAAAAAAAAAAAAgwBgAAABDAAAAAAAAAA==",
+              "ViewState": "AgIAABAAAAAAAAAAAAAwwCIAAAA/AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
               "WhenOpened": "2026-04-23T17:42:34.084Z",
               "EditorCaption": ""
@@ -287,8 +280,7 @@
               "RelativeToolTip": "PROGPOE\\Views\\Admin\\Contracts.cshtml",
               "ViewState": "AgIAAHUBAAAAAAAAAAAAAHMAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-23T16:20:25.127Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T16:20:25.127Z"
             },
             {
               "$type": "Document",
@@ -300,8 +292,7 @@
               "RelativeToolTip": "PROGPOE\\Data\\AppDbContext.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAAAkAAABXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:16:06.843Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:16:06.843Z"
             },
             {
               "$type": "Document",
@@ -313,8 +304,7 @@
               "RelativeToolTip": "PROGPOE\\Controllers\\AccountController.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAIBJwCgAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:22:55.298Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:22:55.298Z"
             },
             {
               "$type": "Document",
@@ -326,8 +316,7 @@
               "RelativeToolTip": "PROGPOE\\Controllers\\MvcAccountController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:24:24.535Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:24:24.535Z"
             },
             {
               "$type": "Document",
@@ -339,8 +328,7 @@
               "RelativeToolTip": "PROGPOE\\Services\\Billing.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:18:18.494Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:18:18.494Z"
             },
             {
               "$type": "Document",
@@ -352,8 +340,7 @@
               "RelativeToolTip": "PROGPOE\\Services\\EmailObserver.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:18:59.323Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:18:59.323Z"
             },
             {
               "$type": "Document",
@@ -365,8 +352,7 @@
               "RelativeToolTip": "PROGPOE\\Interfaces\\IContractObserver.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:14:54.961Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:14:54.961Z"
             },
             {
               "$type": "Document",
@@ -378,8 +364,7 @@
               "RelativeToolTip": "PROGPOE\\Controllers\\ClientController.cs",
               "ViewState": "AgIAAG4AAAAAAAAAAIBJwH4AAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:23:42.365Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:23:42.365Z"
             },
             {
               "$type": "Document",
@@ -391,8 +376,7 @@
               "RelativeToolTip": "PROGPOE\\Factory\\FreightRequestFactory.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAxwBYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:21:41.987Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:21:41.987Z"
             },
             {
               "$type": "Document",
@@ -404,8 +388,7 @@
               "RelativeToolTip": "PROGPOE\\Factory\\Maintenance.cs",
               "ViewState": "AgIAAAIAAAAAAAAAAABQwAgAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:22:02.857Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:22:02.857Z"
             },
             {
               "$type": "Document",
@@ -417,8 +400,7 @@
               "RelativeToolTip": "PROGPOE\\Models\\MaintenanceRequest.cs",
               "ViewState": "AgIAAAgAAAAAAAAAAAA2wA4AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:13:41.384Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:13:41.384Z"
             },
             {
               "$type": "Document",
@@ -430,8 +412,7 @@
               "RelativeToolTip": "PROGPOE\\Models\\FreightRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:13:19.667Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:13:19.667Z"
             },
             {
               "$type": "Document",
@@ -443,8 +424,7 @@
               "RelativeToolTip": "PROGPOE\\Services\\ExchangeRateService.cs",
               "ViewState": "AgIAADIAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-25T23:59:02.948Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-25T23:59:02.948Z"
             },
             {
               "$type": "Document",
@@ -456,8 +436,7 @@
               "RelativeToolTip": "PROGPOE\\Services\\FileStorageService.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAIBJwCEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:19:22.341Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:19:22.341Z"
             },
             {
               "$type": "Document",
@@ -469,8 +448,7 @@
               "RelativeToolTip": "PROGPOE\\Tests\\FileValidationTest.cs",
               "ViewState": "AgIAACEAAAAAAAAAAABQwBQAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T18:44:26.587Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T18:44:26.587Z"
             },
             {
               "$type": "Document",
@@ -482,8 +460,7 @@
               "RelativeToolTip": "PROGPOE\\Controllers\\HomeController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T22:23:02.66Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T22:23:02.66Z"
             },
             {
               "$type": "Document",
@@ -495,20 +472,18 @@
               "RelativeToolTip": "PROGPOE\\Models\\ServiceRequest.cs",
               "ViewState": "AgIAABcAAAAAAAAAAAAxwCQAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:13:04.005Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:13:04.005Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 24,
-              "Title": "InitialCreate.sql ",
+              "Title": "InitialCreate.sql",
               "DocumentMoniker": "C:\\Users\\lab_services_student\\Documents\\GitHub\\PROG7313-POE-\\PROGPOE\\PROGPOE\\Migrations\\InitialCreate.sql",
               "RelativeDocumentMoniker": "PROGPOE\\Migrations\\InitialCreate.sql",
               "ToolTip": "C:\\Users\\lab_services_student\\Documents\\GitHub\\PROG7313-POE-\\PROGPOE\\PROGPOE\\Migrations\\InitialCreate.sql",
               "RelativeToolTip": "PROGPOE\\Migrations\\InitialCreate.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-04-23T18:26:15.645Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T18:26:15.645Z"
             },
             {
               "$type": "Document",
@@ -520,8 +495,7 @@
               "RelativeToolTip": "PROGPOE\\Views\\Client\\Requests.cshtml",
               "ViewState": "AgIAANUAAAAAAAAAAIBJwCkBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-23T16:22:33.945Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T16:22:33.945Z"
             },
             {
               "$type": "Document",
@@ -533,8 +507,7 @@
               "RelativeToolTip": "PROGPOE\\Migrations\\20260425220758_UpdateServiceRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-25T22:07:58.679Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-25T22:07:58.679Z"
             },
             {
               "$type": "Document",
@@ -546,8 +519,7 @@
               "RelativeToolTip": "PROGPOE\\Views\\Home\\Index.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-23T16:07:43.542Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T16:07:43.542Z"
             },
             {
               "$type": "Document",
@@ -559,8 +531,7 @@
               "RelativeToolTip": "PROGPOE\\Views\\Client\\Dashboard.cshtml",
               "ViewState": "AgIAAAUAAAAAAAAAAIBJwCYAAAACAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-23T16:21:21.323Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T16:21:21.323Z"
             },
             {
               "$type": "Document",
@@ -572,8 +543,7 @@
               "RelativeToolTip": "PROGPOE\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-24T23:29:49.825Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-24T23:29:49.825Z"
             },
             {
               "$type": "Document",
@@ -585,8 +555,7 @@
               "RelativeToolTip": "PROGPOE\\Views\\Client\\ClientContracts.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAGEAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-23T16:22:02.661Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T16:22:02.661Z"
             },
             {
               "$type": "Document",
@@ -598,8 +567,7 @@
               "RelativeToolTip": "PROGPOE\\Views\\Shared\\_Layout.cshtml",
               "ViewState": "AgIAACIAAAAAAAAAAIBJwA0AAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-23T16:04:16.996Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T16:04:16.996Z"
             },
             {
               "$type": "Document",
@@ -623,8 +591,7 @@
               "RelativeToolTip": "PROGPOE\\Properties\\launchSettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-04-23T22:07:38.92Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T22:07:38.92Z"
             },
             {
               "$type": "Document",
@@ -636,8 +603,7 @@
               "RelativeToolTip": "PROGPOE\\Views\\Account\\Login.cshtml",
               "ViewState": "AgIAAEYAAAAAAAAAAAAwwFwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-23T16:19:14.084Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T16:19:14.084Z"
             },
             {
               "$type": "Document",
@@ -649,8 +615,7 @@
               "RelativeToolTip": "PROGPOE\\Migrations\\AppDbContextModelSnapshot.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T18:25:36.951Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T18:25:36.951Z"
             },
             {
               "$type": "Document",
@@ -662,8 +627,7 @@
               "RelativeToolTip": "PROGPOE\\Tests\\CurrencyConverterTest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T18:42:19.024Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T18:42:19.024Z"
             },
             {
               "$type": "Document",
@@ -675,8 +639,7 @@
               "RelativeToolTip": "PROGPOE\\Data\\AppDbContextFactory.cs",
               "ViewState": "AgIAAAwAAAAAAAAAAIBZwBUAAAA8AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T17:03:03.292Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T17:03:03.292Z"
             },
             {
               "$type": "Document",
@@ -688,8 +651,7 @@
               "RelativeToolTip": "PROGPOE\\Migrations\\20260423182518_InitialCreate.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T18:25:47.145Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T18:25:47.145Z"
             },
             {
               "$type": "Document",
@@ -701,8 +663,7 @@
               "RelativeToolTip": "PROGPOE\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-04-23T15:34:26.693Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:34:26.693Z"
             },
             {
               "$type": "Document",
@@ -714,8 +675,7 @@
               "RelativeToolTip": "PROGPOE\\Services\\ContractService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAIBJwAkAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:20:54.955Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:20:54.955Z"
             },
             {
               "$type": "Document",
@@ -727,8 +687,7 @@
               "RelativeToolTip": "PROGPOE\\Services\\CurrencyObserver.cs",
               "ViewState": "AgIAAAUAAAAAAAAAAAAYwB0AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:18:39.037Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:18:39.037Z"
             },
             {
               "$type": "Document",
@@ -740,8 +699,7 @@
               "RelativeToolTip": "PROGPOE\\Interfaces\\IServiceRequestFactory.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:15:25.776Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:15:25.776Z"
             },
             {
               "$type": "Document",
@@ -753,8 +711,7 @@
               "RelativeToolTip": "PROGPOE\\Interfaces\\ICurrencyConverter.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:14:34.532Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:14:34.532Z"
             },
             {
               "$type": "Document",
@@ -766,8 +723,7 @@
               "RelativeToolTip": "PROGPOE\\Models\\Contract.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:12:42.543Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:12:42.543Z"
             },
             {
               "$type": "Document",
@@ -779,8 +735,7 @@
               "RelativeToolTip": "PROGPOE\\Models\\Admin.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:12:21.328Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:12:21.328Z"
             },
             {
               "$type": "Document",
@@ -792,8 +747,7 @@
               "RelativeToolTip": "PROGPOE\\Models\\Client.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T15:11:57.132Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T15:11:57.132Z"
             }
           ]
         }

@@ -1,168 +1,299 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
-using PROGPOE.Data;
-using PROGPOE.Models;
-using PROGPOE.Services;
+using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
+using Xunit;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// ─── DATABASE ──────────────────────────────────────────────────────────────
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase")
-                  || string.IsNullOrEmpty(connectionString);
-
-if (useInMemory)
+namespace PROGPOE.Tests
 {
-    builder.Services.AddDbContext<AppDbContext>(o => o.UseInMemoryDatabase("GLMS_DB"));
-    Console.WriteLine("USING IN-MEMORY DATABASE");
-}
-else
-{
-    builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(connectionString));
-    Console.WriteLine("USING SQL SERVER DATABASE");
-}
-
-// ─── IDENTITY ──────────────────────────────────────────────────────────────
-builder.Services.AddIdentity<Client, IdentityRole>(o =>
-{
-    o.Password.RequireDigit = true;
-    o.Password.RequiredLength = 6;
-    o.Password.RequireNonAlphanumeric = false;
-})
-.AddEntityFrameworkStores<AppDbContext>()
-.AddDefaultTokenProviders();
-
-builder.Services.AddIdentityCore<Admin>()
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
-
-// ─── JWT AUTHENTICATION ────────────────────────────────────────────────────
-var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
-builder.Services.AddAuthentication(o =>
-{
-    o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(o =>
-{
-    o.TokenValidationParameters = new TokenValidationParameters
+    /// <summary>
+    /// Automated API Integration Tests.
+    /// Tests run against the live running API endpoints and assert HTTP status codes + JSON responses.
+    /// These prevent "breaking changes" in a DevOps pipeline before deployment.
+    /// </summary>
+    public class ApiIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(key)
-    };
-});
+        private readonly HttpClient _client;
+        private string? _adminToken;
+        private string? _clientToken;
 
-// ─── SERVICES ──────────────────────────────────────────────────────────────
-builder.Services.AddScoped<CurrencyConverter>();
-builder.Services.AddHttpClient<ExchangeRateService>();
-builder.Services.AddScoped<Billing>();
-builder.Services.AddScoped<EmailObserver>();
-builder.Services.AddScoped<FileStorageService>();
-builder.Services.AddScoped<ContractService>();
-
-// ─── MVC + API + SWAGGER ───────────────────────────────────────────────────
-builder.Services.AddControllersWithViews();
-builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "TechMove GLMS API",
-        Version = "v1",
-        Description = "Global Logistics Management System REST API. " +
-                      "POST /api/account/login to get a Bearer token, " +
-                      "then click Authorize and enter: Bearer {your_token}"
-    });
-
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter your JWT token (without 'Bearer ' prefix). Example: eyJhbGci..."
-    });
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+        public ApiIntegrationTests(WebApplicationFactory<Program> factory)
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
+            _client = factory.CreateClient();
         }
-    });
-});
 
-// ─── BUILD ─────────────────────────────────────────────────────────────────
-var app = builder.Build();
+        // ── HELPER: get a JWT token ───────────────────────────────────
+        private async Task<string?> LoginAsync(string email, string password)
+        {
+            var payload = new { Email = email, Password = password };
+            var res     = await _client.PostAsJsonAsync("/api/account/login", payload);
+            if (!res.IsSuccessStatusCode) return null;
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TechMove GLMS API v1");
-        c.RoutePrefix = "swagger";
-        c.DocumentTitle = "TechMove API";
-    });
-}
+            var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+            return body.GetProperty("token").GetString();
+        }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAuthentication();
-app.UseAuthorization();
+        private HttpRequestMessage AuthRequest(HttpMethod method, string url, string token, object? body = null)
+        {
+            var req = new HttpRequestMessage(method, url);
+            req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            if (body != null)
+                req.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
+            return req;
+        }
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+        // ── AUTH TESTS ───────────────────────────────────────────────
 
-// ─── SEED DATABASE ─────────────────────────────────────────────────────────
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var rm = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var am = scope.ServiceProvider.GetRequiredService<UserManager<Admin>>();
-    var cm = scope.ServiceProvider.GetRequiredService<UserManager<Client>>();
+        [Fact]
+        public async Task Login_Admin_ReturnsToken()
+        {
+            var token = await LoginAsync("admin@glms.com", "Admin@123");
+            Assert.NotNull(token);
+            Assert.NotEmpty(token);
+        }
 
-    await db.Database.EnsureCreatedAsync();
+        [Fact]
+        public async Task Login_Client_ReturnsToken()
+        {
+            var token = await LoginAsync("client@test.com", "Client@123");
+            Assert.NotNull(token);
+            Assert.NotEmpty(token);
+        }
 
-    foreach (var role in new[] { "Admin", "Client" })
-        if (!await rm.RoleExistsAsync(role))
-            await rm.CreateAsync(new IdentityRole(role));
+        [Fact]
+        public async Task Login_InvalidCredentials_Returns401()
+        {
+            var res = await _client.PostAsJsonAsync("/api/account/login", new { Email = "fake@test.com", Password = "wrong" });
+            Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
+        }
 
-    if (await am.FindByEmailAsync("admin@glms.com") == null)
-    {
-        var admin = new Admin { UserName = "admin@glms.com", Email = "admin@glms.com", FullName = "System Admin", Department = "IT" };
-        await am.CreateAsync(admin, "Admin@123");
-        await am.AddToRoleAsync(admin, "Admin");
+        // ── UNAUTHENTICATED ACCESS ───────────────────────────────────
+
+        [Fact]
+        public async Task AdminContracts_WithoutToken_Returns401()
+        {
+            var res = await _client.GetAsync("/api/admin/contracts");
+            Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
+        }
+
+        [Fact]
+        public async Task ClientContracts_WithoutToken_Returns401()
+        {
+            var res = await _client.GetAsync("/api/client/contracts");
+            Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
+        }
+
+        [Fact]
+        public async Task AdminEndpoint_WithClientToken_Returns403()
+        {
+            var token = await LoginAsync("client@test.com", "Client@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Get, "/api/admin/contracts", token!);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.Forbidden, res.StatusCode);
+        }
+
+        // ── ADMIN DASHBOARD ─────────────────────────────────────────
+
+        [Fact]
+        public async Task AdminDashboard_Returns200_WithStats()
+        {
+            var token = await LoginAsync("admin@glms.com", "Admin@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Get, "/api/admin/dashboard", token!);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.True(body.TryGetProperty("totalContracts", out _) || body.TryGetProperty("TotalContracts", out _));
+        }
+
+        // ── ADMIN CONTRACTS CRUD ─────────────────────────────────────
+
+        [Fact]
+        public async Task GetContracts_ReturnsOK_AndNotNull()
+        {
+            var token = await LoginAsync("admin@glms.com", "Admin@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Get, "/api/admin/contracts", token!);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            var body = await res.Content.ReadAsStringAsync();
+            Assert.NotNull(body);
+        }
+
+        [Fact]
+        public async Task GetContracts_WithStatusFilter_ReturnsOK()
+        {
+            var token = await LoginAsync("admin@glms.com", "Admin@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Get, "/api/admin/contracts?status=0", token!);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetClients_Returns200_NotNull()
+        {
+            var token = await LoginAsync("admin@glms.com", "Admin@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Get, "/api/admin/clients", token!);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            var body = await res.Content.ReadAsStringAsync();
+            Assert.NotNull(body);
+        }
+
+        // ── ADMIN SERVICE REQUESTS ───────────────────────────────────
+
+        [Fact]
+        public async Task GetServiceRequests_ReturnsOK_NotNull()
+        {
+            var token = await LoginAsync("admin@glms.com", "Admin@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Get, "/api/admin/service-requests", token!);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            var body = await res.Content.ReadAsStringAsync();
+            Assert.NotNull(body);
+        }
+
+        [Fact]
+        public async Task ApproveNonExistentRequest_Returns404()
+        {
+            var token = await LoginAsync("admin@glms.com", "Admin@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Patch, "/api/admin/service-requests/99999/approve", token!, new { notes = "test" });
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
+        }
+
+        [Fact]
+        public async Task DeclineNonExistentRequest_Returns404()
+        {
+            var token = await LoginAsync("admin@glms.com", "Admin@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Patch, "/api/admin/service-requests/99999/decline", token!, new { notes = "test" });
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
+        }
+
+        [Fact]
+        public async Task DeleteNonExistentContract_Returns404()
+        {
+            var token = await LoginAsync("admin@glms.com", "Admin@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Delete, "/api/admin/contracts/99999", token!);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
+        }
+
+        // ── CLIENT DASHBOARD ─────────────────────────────────────────
+
+        [Fact]
+        public async Task ClientDashboard_Returns200()
+        {
+            var token = await LoginAsync("client@test.com", "Client@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Get, "/api/client/dashboard", token!);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        // ── CLIENT CONTRACTS ─────────────────────────────────────────
+
+        [Fact]
+        public async Task ClientContracts_Returns200_NotNull()
+        {
+            var token = await LoginAsync("client@test.com", "Client@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Get, "/api/client/contracts", token!);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            var body = await res.Content.ReadAsStringAsync();
+            Assert.NotNull(body);
+        }
+
+        // ── CLIENT SERVICE REQUESTS ──────────────────────────────────
+
+        [Fact]
+        public async Task ClientServiceRequests_Returns200_NotNull()
+        {
+            var token = await LoginAsync("client@test.com", "Client@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Get, "/api/client/service-requests", token!);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        [Fact]
+        public async Task CreateServiceRequest_InvalidContract_Returns404()
+        {
+            var token = await LoginAsync("client@test.com", "Client@123");
+            Assert.NotNull(token);
+
+            var payload = new
+            {
+                contractId = 99999,
+                type       = 0,
+                origin     = "Cape Town",
+                desc       = "Test freight",
+                dest       = "Johannesburg",
+                weight     = 100.0
+            };
+
+            var req = AuthRequest(HttpMethod.Post, "/api/client/service-requests", token!, payload);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
+        }
+
+        [Fact]
+        public async Task DeleteNonExistentClientRequest_Returns404()
+        {
+            var token = await LoginAsync("client@test.com", "Client@123");
+            Assert.NotNull(token);
+
+            var req = AuthRequest(HttpMethod.Delete, "/api/client/service-requests/99999", token!);
+            var res = await _client.SendAsync(req);
+
+            Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
+        }
+
+        // ── SWAGGER ──────────────────────────────────────────────────
+
+        [Fact]
+        public async Task SwaggerJson_Returns200_NotNull()
+        {
+            var res = await _client.GetAsync("/swagger/v1/swagger.json");
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            var body = await res.Content.ReadAsStringAsync();
+            Assert.NotNull(body);
+            Assert.Contains("TechMove", body);
+        }
     }
-
-    if (await cm.FindByEmailAsync("client@test.com") == null)
-    {
-        var client = new Client { UserName = "client@test.com", Email = "client@test.com", FullName = "Test Client", Region = "North America" };
-        await cm.CreateAsync(client, "Client@123");
-        await cm.AddToRoleAsync(client, "Client");
-    }
 }
-
-app.Run();

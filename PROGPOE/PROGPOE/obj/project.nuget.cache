@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "dgSpecHash": "9SbSkZn3EWc=",
-  "success": false,
+  "dgSpecHash": "g4v2oS7u0Eo=",
+  "success": true,
   "projectFilePath": "C:\\Users\\lab_services_student\\Documents\\GitHub\\PROG7313-POE-\\PROGPOE\\PROGPOE\\PROGPOE.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\lab_services_student\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
@@ -32,7 +32,7 @@
     "C:\\Users\\lab_services_student\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\10.0.7\\microsoft.entityframeworkcore.relational.10.0.7.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\microsoft.entityframeworkcore.sqlserver\\10.0.7\\microsoft.entityframeworkcore.sqlserver.10.0.7.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\microsoft.entityframeworkcore.tools\\10.0.7\\microsoft.entityframeworkcore.tools.10.0.7.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\microsoft.extensions.apidescription.server\\10.0.0\\microsoft.extensions.apidescription.server.10.0.0.nupkg.sha512",
+    "C:\\Users\\lab_services_student\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\microsoft.extensions.dependencymodel\\10.0.8\\microsoft.extensions.dependencymodel.10.0.8.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\microsoft.identity.client\\4.73.1\\microsoft.identity.client.4.73.1.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\microsoft.identity.client.extensions.msal\\4.73.1\\microsoft.identity.client.extensions.msal.4.73.1.nupkg.sha512",
@@ -50,14 +50,11 @@
     "C:\\Users\\lab_services_student\\.nuget\\packages\\microsoft.visualstudio.solutionpersistence\\1.0.52\\microsoft.visualstudio.solutionpersistence.1.0.52.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\mono.texttemplating\\3.0.0\\mono.texttemplating.3.0.0.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\moq\\4.20.72\\moq.4.20.72.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\namotion.reflection\\2.0.10\\namotion.reflection.2.0.10.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\njsonschema\\10.6.8\\njsonschema.10.6.8.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\swashbuckle.aspnetcore\\10.1.7\\swashbuckle.aspnetcore.10.1.7.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\swashbuckle.aspnetcore.annotations\\6.3.0\\swashbuckle.aspnetcore.annotations.6.3.0.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\10.1.7\\swashbuckle.aspnetcore.swagger.10.1.7.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\10.1.7\\swashbuckle.aspnetcore.swaggergen.10.1.7.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\10.1.7\\swashbuckle.aspnetcore.swaggerui.10.1.7.nupkg.sha512",
+    "C:\\Users\\lab_services_student\\.nuget\\packages\\swashbuckle.aspnetcore\\6.9.0\\swashbuckle.aspnetcore.6.9.0.nupkg.sha512",
+    "C:\\Users\\lab_services_student\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.9.0\\swashbuckle.aspnetcore.swagger.6.9.0.nupkg.sha512",
+    "C:\\Users\\lab_services_student\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.9.0\\swashbuckle.aspnetcore.swaggergen.6.9.0.nupkg.sha512",
+    "C:\\Users\\lab_services_student\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.9.0\\swashbuckle.aspnetcore.swaggerui.6.9.0.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\system.clientmodel\\1.5.1\\system.clientmodel.1.5.1.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\system.codedom\\6.0.0\\system.codedom.6.0.0.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\system.composition\\9.0.0\\system.composition.9.0.0.nupkg.sha512",
@@ -71,7 +68,6 @@
     "C:\\Users\\lab_services_student\\.nuget\\packages\\system.memory.data\\8.0.1\\system.memory.data.8.0.1.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\system.security.cryptography.pkcs\\9.0.4\\system.security.cryptography.pkcs.9.0.4.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\system.security.cryptography.protecteddata\\9.0.4\\system.security.cryptography.protecteddata.9.0.4.nupkg.sha512",
-    "C:\\Users\\lab_services_student\\.nuget\\packages\\v24.openapi.models\\2.0.45\\v24.openapi.models.2.0.45.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\xunit\\2.9.3\\xunit.2.9.3.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\xunit.abstractions\\2.0.3\\xunit.abstractions.2.0.3.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\xunit.analyzers\\1.18.0\\xunit.analyzers.1.18.0.nupkg.sha512",
@@ -81,17 +77,5 @@
     "C:\\Users\\lab_services_student\\.nuget\\packages\\xunit.extensibility.execution\\2.9.3\\xunit.extensibility.execution.2.9.3.nupkg.sha512",
     "C:\\Users\\lab_services_student\\.nuget\\packages\\xunit.runner.visualstudio\\2.8.2\\xunit.runner.visualstudio.2.8.2.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1605",
-      "level": "Error",
-      "message": "Warning As Error: Detected package downgrade: Microsoft.OpenApi from 2.4.1 to 1.6.14. Reference the package directly from the project to select a different version. \r\n PROGPOE -> Swashbuckle.AspNetCore 10.1.7 -> Swashbuckle.AspNetCore.Swagger 10.1.7 -> Microsoft.OpenApi (>= 2.4.1) \r\n PROGPOE -> Microsoft.OpenApi (>= 1.6.14)",
-      "projectPath": "C:\\Users\\lab_services_student\\Documents\\GitHub\\PROG7313-POE-\\PROGPOE\\PROGPOE\\PROGPOE.csproj",
-      "filePath": "C:\\Users\\lab_services_student\\Documents\\GitHub\\PROG7313-POE-\\PROGPOE\\PROGPOE\\PROGPOE.csproj",
-      "libraryId": "Microsoft.OpenApi",
-      "targetGraphs": [
-        "net10.0"
-      ]
-    }
-  ]
+  "logs": []
 }

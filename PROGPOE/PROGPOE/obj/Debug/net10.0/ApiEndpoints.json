@@ -99,6 +99,59 @@
   },
   {
     "ContainingType": "PROGPOE.Controllers.ApiAdminController",
+    "Method": "GetContract",
+    "RelativePath": "api/admin/contracts/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PROGPOE.Controllers.ApiAdminController",
+    "Method": "UpdateContract",
+    "RelativePath": "api/admin/contracts/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "PROGPOE.Controllers.UpdateContractRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PROGPOE.Controllers.ApiAdminController",
+    "Method": "DeleteContract",
+    "RelativePath": "api/admin/contracts/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PROGPOE.Controllers.ApiAdminController",
     "Method": "DownloadAgreement",
     "RelativePath": "api/admin/contracts/{id}/download",
     "HttpMethod": "GET",
@@ -115,9 +168,9 @@
   },
   {
     "ContainingType": "PROGPOE.Controllers.ApiAdminController",
-    "Method": "ChangeContractStatus",
+    "Method": "PatchContractStatus",
     "RelativePath": "api/admin/contracts/{id}/status",
-    "HttpMethod": "PUT",
+    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -172,14 +225,52 @@
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "status",
+        "Type": "System.Nullable\u00601[[PROGPOE.Models.ServiceRequestStatus, PROGPOE, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PROGPOE.Controllers.ApiAdminController",
+    "Method": "GetServiceRequest",
+    "RelativePath": "api/admin/service-requests/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PROGPOE.Controllers.ApiAdminController",
+    "Method": "DeleteServiceRequest",
+    "RelativePath": "api/admin/service-requests/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
     "ContainingType": "PROGPOE.Controllers.ApiAdminController",
     "Method": "ApproveRequest",
     "RelativePath": "api/admin/service-requests/{id}/approve",
-    "HttpMethod": "PUT",
+    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -198,9 +289,9 @@
   },
   {
     "ContainingType": "PROGPOE.Controllers.ApiAdminController",
-    "Method": "DenyRequest",
-    "RelativePath": "api/admin/service-requests/{id}/deny",
-    "HttpMethod": "PUT",
+    "Method": "DeclineRequest",
+    "RelativePath": "api/admin/service-requests/{id}/decline",
+    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -219,19 +310,41 @@
   },
   {
     "ContainingType": "PROGPOE.Controllers.ApiClientController",
-    "Method": "Contracts",
+    "Method": "GetContracts",
     "RelativePath": "api/client/contracts",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "status",
+        "Type": "System.Nullable\u00601[[PROGPOE.Models.ContractStatus, PROGPOE, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
     "ContainingType": "PROGPOE.Controllers.ApiClientController",
-    "Method": "Sign",
+    "Method": "GetContract",
+    "RelativePath": "api/client/contracts/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PROGPOE.Controllers.ApiClientController",
+    "Method": "SignContract",
     "RelativePath": "api/client/contracts/{id}/sign",
-    "HttpMethod": "POST",
+    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -265,6 +378,22 @@
   },
   {
     "ContainingType": "PROGPOE.Controllers.ApiClientController",
+    "Method": "GetRequests",
+    "RelativePath": "api/client/service-requests",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "status",
+        "Type": "System.Nullable\u00601[[PROGPOE.Models.ServiceRequestStatus, PROGPOE, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PROGPOE.Controllers.ApiClientController",
     "Method": "CreateRequest",
     "RelativePath": "api/client/service-requests",
     "HttpMethod": "POST",
@@ -281,12 +410,55 @@
   },
   {
     "ContainingType": "PROGPOE.Controllers.ApiClientController",
-    "Method": "Requests",
-    "RelativePath": "api/client/service-requests",
+    "Method": "GetRequest",
+    "RelativePath": "api/client/service-requests/{id}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PROGPOE.Controllers.ApiClientController",
+    "Method": "UpdateRequest",
+    "RelativePath": "api/client/service-requests/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "d",
+        "Type": "PROGPOE.Controllers.UpdateReqDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PROGPOE.Controllers.ApiClientController",
+    "Method": "DeleteRequest",
+    "RelativePath": "api/client/service-requests/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   }
 ]
