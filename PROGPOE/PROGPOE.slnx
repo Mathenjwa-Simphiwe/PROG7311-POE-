@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="PROGPOE/PROGPOE.csproj" />
+  <Project Path="TechMoveAPI/TechMoveAPI.csproj" Id="2938fd16-84b9-4b57-bb04-af439fb8d6e9" />
 </Solution>
