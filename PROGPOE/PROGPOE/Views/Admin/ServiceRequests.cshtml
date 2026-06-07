@@ -64,115 +64,118 @@
 </div>
 
 @section Scripts {
-<script>
-    const token = localStorage.getItem('token');
-    const role  = localStorage.getItem('role');
-    if (!token || role !== 'Admin') { window.location.href = '/Account/Login'; }
+    <script>
+        const token = localStorage.getItem('token');
+        const role  = localStorage.getItem('role');
+        if (!token || role !== 'Admin') { window.location.href = '/Account/Login'; }
 
-    let currentRequestId = null;
-    let currentAction    = null;
+        let currentRequestId = null;
+        let currentAction    = null;
 
-    const statusBadge = s => {
-        const m = { Pending:'warning', Approved:'success', InProgress:'info', Completed:'primary', Denied:'danger' };
-        return `<span class="badge bg-${m[s]||'secondary'}">${s}</span>`;
-    };
-    const typeBadge = t => `<span class="badge bg-${t==='Freight'?'info':'secondary'}">${t}</span>`;
+        const statusBadge = s => {
+            const m = { Pending:'warning', Approved:'success', InProgress:'info', Completed:'primary', Denied:'danger' };
+            return `<span class="badge bg-${m[s]||'secondary'}">${s}</span>`;
+        };
+        const typeBadge = t => `<span class="badge bg-${t==='Freight'?'info':'secondary'}">${t}</span>`;
 
-    async function authFetch(url, opts = {}) {
-        return fetch(url, { ...opts, headers: { 'Authorization': 'Bearer ' + token, ...(opts.headers||{}) } });
-    }
+        // Use global API_BASE_URL from _Layout
+        async function authFetch(url, opts = {}) {
+            const fullUrl = url.startsWith('http') ? url : window.API_BASE_URL + url;
+            return fetch(fullUrl, { ...opts, headers: { 'Authorization': 'Bearer ' + token, ...(opts.headers||{}) } });
+        }
 
-    function showAlert(type, msg) {
-        document.getElementById('alertArea').innerHTML =
-            `<div class="alert alert-${type} alert-dismissible fade show">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-    }
+        function showAlert(type, msg) {
+            document.getElementById('alertArea').innerHTML =
+                `<div class="alert alert-${type} alert-dismissible fade show">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+        }
 
-    // ── GET (load) ──────────────────────────────────────────────────
-    async function loadRequests() {
-        const body = document.getElementById('requestsBody');
-        body.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
+        // ── GET (load) ──────────────────────────────────────────────────
+        async function loadRequests() {
+            const body = document.getElementById('requestsBody');
+            body.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
 
-        const st  = document.getElementById('filterStatus').value;
-        const url = '/api/admin/service-requests' + (st !== '' ? '?status=' + st : '');
+            const st  = document.getElementById('filterStatus').value;
+            const url = '/api/service-requests' + (st !== '' ? '?status=' + st : '');   // removed /admin
 
-        try {
-            const res  = await authFetch(url);
-            if (!res.ok) { body.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Failed to load.</td></tr>'; return; }
-            const list = await res.json();
-            if (!list.length) {
-                body.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x d-block mb-2"></i>No requests found.</td></tr>';
-                return;
-            }
-            body.innerHTML = list.map(r => `
-                <tr>
-                    <td><small class="text-muted">${r.requestId}</small></td>
-                    <td>${typeBadge(r.type)}</td>
-                    <td>${r.contractNumber||'—'}</td>
-                    <td>${r.clientName||'—'}</td>
-                    <td>${r.description}</td>
-                    <td>${r.localCostZar ? 'R ' + Number(r.localCostZar).toFixed(2) : (r.cost ? 'R ' + Number(r.cost).toFixed(2) : '—')}</td>
-                    <td>${statusBadge(r.status)}</td>
-                    <td class="d-flex gap-1">
-                        ${r.status === 'Pending' ? `
-                        <button class="btn btn-sm btn-success" title="PATCH Approve"
-                            onclick="openDecision(${r.serviceRequestId},'${r.requestId}','approve')">
-                            <i class="fas fa-check"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger" title="PATCH Decline"
-                            onclick="openDecision(${r.serviceRequestId},'${r.requestId}','decline')">
-                            <i class="fas fa-times"></i>
-                        </button>` : ''}
-                        <button class="btn btn-sm btn-outline-danger" title="DELETE"
-                            onclick="deleteRequest(${r.serviceRequestId},'${r.requestId}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>`).join('');
-        } catch { body.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Network error.</td></tr>'; }
-    }
+            try {
+                const res  = await authFetch(url);
+                if (!res.ok) { body.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Failed to load.</div>'); return; }
+                const list = await res.json();
+                if (!list.length) {
+                    body.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x d-block mb-2"></i>No requests found.</td></tr>';
+                    return;
+                }
+                body.innerHTML = list.map(r => `
+                    <tr>
+                        <td><small class="text-muted">${r.requestId}</small></td>
+                        <td>${typeBadge(r.type)}</td>
+                        <td>${r.contractNumber||'—'}</td>
+                        <td>${r.clientName||'—'}</td>
+                        <td>${r.description}</td>
+                        <td>${r.localCostZar ? 'R ' + Number(r.localCostZar).toFixed(2) : (r.cost ? 'R ' + Number(r.cost).toFixed(2) : '—')}</td>
+                        <td>${statusBadge(r.status)}</td>
+                        <td class="d-flex gap-1">
+                            ${r.status === 'Pending' ? `
+                            <button class="btn btn-sm btn-success" title="PATCH Approve"
+                                onclick="openDecision(${r.serviceRequestId},'${r.requestId}','approve')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" title="PATCH Decline"
+                                onclick="openDecision(${r.serviceRequestId},'${r.requestId}','decline')">
+                                <i class="fas fa-times"></i>
+                            </button>` : ''}
+                            <button class="btn btn-sm btn-outline-danger" title="DELETE"
+                                onclick="deleteRequest(${r.serviceRequestId},'${r.requestId}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`).join('');
+            } catch { body.innerHTML = '</td><td colspan="8" class="text-center text-danger py-4">Network error.</td></tr>'; }
+        }
 
-    // ── PATCH (approve/decline) ─────────────────────────────────────
-    function openDecision(id, reqId, action) {
-        currentRequestId = id;
-        currentAction    = action;
-        const isApprove  = action === 'approve';
-        document.getElementById('decisionHeader').className = `modal-header bg-${isApprove?'success':'danger'} text-white`;
-        document.getElementById('decisionTitle').textContent = isApprove ? 'Approve Request' : 'Decline Request';
-        document.getElementById('decisionRequestId').textContent = reqId;
-        document.getElementById('adminNotes').value = '';
-        const btn = document.getElementById('decisionBtn');
-        btn.className   = `btn btn-${isApprove?'success':'danger'}`;
-        btn.textContent = isApprove ? 'Approve' : 'Decline';
-        new bootstrap.Modal(document.getElementById('decisionModal')).show();
-    }
+        // ── PATCH (approve/decline) ─────────────────────────────────────
+        function openDecision(id, reqId, action) {
+            currentRequestId = id;
+            currentAction    = action;
+            const isApprove  = action === 'approve';
+            document.getElementById('decisionHeader').className = `modal-header bg-${isApprove?'success':'danger'} text-white`;
+            document.getElementById('decisionTitle').textContent = isApprove ? 'Approve Request' : 'Decline Request';
+            document.getElementById('decisionRequestId').textContent = reqId;
+            document.getElementById('adminNotes').value = '';
+            const btn = document.getElementById('decisionBtn');
+            btn.className   = `btn btn-${isApprove?'success':'danger'}`;
+            btn.textContent = isApprove ? 'Approve' : 'Decline';
+            new bootstrap.Modal(document.getElementById('decisionModal')).show();
+        }
 
-    async function submitDecision() {
-        if (!currentRequestId) return;
-        const url = `/api/admin/service-requests/${currentRequestId}/${currentAction}`;
-        try {
-            const res  = await authFetch(url, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ notes: document.getElementById('adminNotes').value })
-            });
-            const data = await res.json();
-            bootstrap.Modal.getInstance(document.getElementById('decisionModal')).hide();
-            showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Done.' : 'Failed.'));
-            if (res.ok) loadRequests();
-        } catch { showAlert('danger', 'Network error.'); }
-    }
+        async function submitDecision() {
+            if (!currentRequestId) return;
+            // Use correct backend endpoint: /api/service-requests/{id}/approve or /decline
+            const url = `/api/service-requests/${currentRequestId}/${currentAction}`;
+            try {
+                const res  = await authFetch(url, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notes: document.getElementById('adminNotes').value })
+                });
+                const data = await res.json();
+                bootstrap.Modal.getInstance(document.getElementById('decisionModal')).hide();
+                showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Done.' : 'Failed.'));
+                if (res.ok) loadRequests();
+            } catch { showAlert('danger', 'Network error.'); }
+        }
 
-    // ── DELETE ──────────────────────────────────────────────────────
-    async function deleteRequest(id, reqId) {
-        if (!confirm(`Delete request ${reqId}? This cannot be undone.`)) return;
-        try {
-            const res  = await authFetch(`/api/admin/service-requests/${id}`, { method: 'DELETE' });
-            const data = await res.json();
-            showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Deleted.' : 'Failed.'));
-            if (res.ok) loadRequests();
-        } catch { showAlert('danger', 'Network error.'); }
-    }
+        // ── DELETE ──────────────────────────────────────────────────────
+        async function deleteRequest(id, reqId) {
+            if (!confirm(`Delete request ${reqId}? This cannot be undone.`)) return;
+            try {
+                const res  = await authFetch(`/api/service-requests/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Deleted.' : 'Failed.'));
+                if (res.ok) loadRequests();
+            } catch { showAlert('danger', 'Network error.'); }
+        }
 
-    loadRequests();
-</script>
+        loadRequests();
+    </script>
 }

@@ -64,7 +64,7 @@ builder.Services.AddAuthentication(o =>
 
 // ─── CORS (allows PROGPOE MVC frontend to call this API) ──────────────────
 builder.Services.AddCors(o => o.AddPolicy("MvcFrontend", p =>
-    p.WithOrigins("https://localhost:7000", "http://localhost:5000")
+    p.WithOrigins("https://localhost:7000", "http://localhost:5000", "https://localhost:7244")
      .AllowAnyHeader()
      .AllowAnyMethod()
      .AllowCredentials()));

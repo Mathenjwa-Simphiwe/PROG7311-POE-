@@ -138,8 +138,9 @@
         return `<span class="badge bg-${m[s]||'secondary'}">${s}</span>`;
     };
 
-    async function authFetch(url, opts = {}) {
-        return fetch(url, { ...opts, headers: { 'Authorization': 'Bearer ' + token, ...(opts.headers||{}) } });
+        async function authFetch(url, opts = {}) {
+          const fullUrl = url.startsWith('http') ? url : window.API_BASE_URL + url;
+          return fetch(fullUrl, { ...opts, headers: { 'Authorization': 'Bearer ' + token, ...(opts.headers||{}) } });
     }
 
     function showAlert(type, msg, area='alertArea') {
@@ -152,7 +153,7 @@
         const body = document.getElementById('requestsBody');
         body.innerHTML = '<tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
         try {
-            const res  = await authFetch('/api/client/service-requests');
+            const res  = await authFetch('/api/service-requests');
             const list = res.ok ? await res.json() : [];
             if (!list.length) {
                 body.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x d-block mb-2"></i>No requests yet.</td></tr>';
@@ -187,7 +188,7 @@
     async function loadContracts() {
         const sel = document.getElementById('contractSelect');
         sel.innerHTML = '<option value="">Loading...</option>';
-        const res = await authFetch('/api/client/contracts');
+        const res = await authFetch('/api/contracts');
         const list = res.ok ? await res.json() : [];
         sel.innerHTML = list.filter(c => c.status === 'Active' || c.status === 'Draft').length
             ? '<option value="">— Select contract —</option>' + list.filter(c => c.status==='Active'||c.status==='Draft').map(c => `<option value="${c.contractId}">${c.contractNumber} (${c.status})</option>`).join('')

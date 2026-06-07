@@ -10,6 +10,9 @@
         .api-btn { border: 1px solid rgba(255,255,255,.4); }
         .api-btn:hover { background: rgba(255,255,255,.15); }
     </style>
+    <script>
+            window.API_BASE_URL = 'https://localhost:7254';
+    </script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -27,7 +30,7 @@
                     <!-- API button: always visible to logged-in users of ANY role -->
                     <li class="nav-item" id="apiLink" style="display:none;">
                         <a class="nav-link text-warning api-btn px-3 rounded fw-semibold"
-                           href="/swagger" target="_blank" title="Open Swagger / OpenAPI explorer">
+                           href="https://localhost:7254/swagger" target="_blank" title="Open Swagger / OpenAPI explorer">
                             <i class="fas fa-code me-1"></i> API
                         </a>
                     </li>

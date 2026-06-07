@@ -195,9 +195,9 @@
     const svMap   = { Draft:'0', Active:'1', Expired:'2', OnHold:'3', 'On Hold':'3', Terminated:'4' };
     const slMap   = { Standard:'0', Premium:'1', Enterprise:'2' };
 
-    async function authFetch(url, opts = {}) {
-        return fetch(url, { ...opts, headers: { 'Authorization': 'Bearer ' + token, ...(opts.headers || {}) } });
-    }
+        async function authFetch(url, opts = {}) {
+        const fullUrl = url.startsWith('http') ? url : window.API_BASE_URL + url;
+        return fetch(fullUrl, { ...opts, headers: { 'Authorization': 'Bearer ' + token, ...(opts.headers||{}) } });
 
     function showAlert(type, html, area = 'alertArea') {
         document.getElementById(area).innerHTML =
@@ -218,7 +218,7 @@
         if (st !== '') p.append('status', st);
 
         try {
-            const res = await authFetch('/api/admin/contracts?' + p);
+            const res = await authFetch('/api/contracts?' + p);
             if (!res.ok) { body.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Failed to load.</td></tr>'; return; }
             const list = await res.json();
             if (!list.length) {
@@ -258,7 +258,7 @@
     async function loadClients() {
         const sel = document.getElementById('clientSelect');
         sel.innerHTML = '<option value="">Loading...</option>';
-        const res = await authFetch('/api/admin/clients');
+        const res = await authFetch('/api/clients');
         const clients = res.ok ? await res.json() : [];
         sel.innerHTML = clients.length
             ? '<option value="">— Select client —</option>' + clients.map(c => `<option value="${c.id}">${c.fullName} (${c.email})</option>`).join('')
@@ -302,7 +302,7 @@
         if (agreementFile) fd.append('Agreement', agreementFile);
 
         try {
-            const res  = await authFetch('/api/admin/contracts', { method: 'POST', body: fd });
+            const res  = await authFetch('/api/contracts', { method: 'POST', body: fd });
             const data = await res.json();
             if (res.ok) {
                 bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
@@ -339,7 +339,7 @@
             serviceLevel: parseInt(document.getElementById('eServiceLevel').value)
         };
         try {
-            const res  = await authFetch(`/api/admin/contracts/${currentId}`, {
+            const res  = await authFetch(`/api/contracts/${currentId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
@@ -362,7 +362,7 @@
     async function submitStatusChange() {
         if (!currentId) return;
         try {
-            const res  = await authFetch(`/api/admin/contracts/${currentId}/status`, {
+            const res  = await authFetch(`/api/contracts/${currentId}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: parseInt(document.getElementById('newStatus').value) })
@@ -378,7 +378,7 @@
     async function deleteContract(id, number) {
         if (!confirm(`Delete contract ${number}? This cannot be undone.`)) return;
         try {
-            const res  = await authFetch(`/api/admin/contracts/${id}`, { method: 'DELETE' });
+            const res  = await authFetch(`/api/contracts/${id}`, { method: 'DELETE' });
             const data = await res.json();
             showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Deleted.' : 'Delete failed.'));
             if (res.ok) loadContracts();

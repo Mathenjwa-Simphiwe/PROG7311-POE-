@@ -18,8 +18,7 @@ builder.Services.AddHttpContextAccessor();
 // runs on https://localhost:7001 (check its launchSettings.json).
 builder.Services.AddHttpClient<TechMoveApiService>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["TechMoveApi:BaseUrl"]
-                                 ?? "https://localhost:7001/");
+    client.BaseAddress = new Uri("https://localhost:7254/");
 });
 
 // ─── MVC ──────────────────────────────────────────────────────────────────

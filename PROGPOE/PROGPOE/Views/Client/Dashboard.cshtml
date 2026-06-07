@@ -36,7 +36,7 @@
                 const token = localStorage.getItem('token');
                 const baseUrl = window.location.origin;
                 
-                const response = await fetch(baseUrl + '/api/client/dashboard', {
+                const response = await fetch(API_BASE_URL  + '/api/dashboard', {
                     headers: {
                         'Authorization': 'Bearer ' + token,
                         'Content-Type': 'application/json'
