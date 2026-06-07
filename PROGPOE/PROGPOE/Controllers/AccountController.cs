@@ -1,41 +1,58 @@
-﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using PROGPOE.Models;
+using PROGPOE.Services;
 
 namespace PROGPOE.Controllers
 {
-    [ApiController, Route("api/account")]
-    public class ApiAccountController : ControllerBase
+    // ─────────────────────────────────────────────────────────────────────────
+    //  MVC Account Controller
+    //  Handles the login page and delegates authentication to TechMoveAPI.
+    //  On success, stores the JWT in the session so TechMoveApiService can
+    //  attach it to outbound API calls automatically.
+    // ─────────────────────────────────────────────────────────────────────────
+    public class AccountController : Controller
     {
-        private readonly UserManager<Client> _cm;
-        private readonly UserManager<Admin> _am;
-        private readonly IConfiguration _cfg;
-        public ApiAccountController(UserManager<Client> cm, UserManager<Admin> am, IConfiguration cfg) { _cm = cm; _am = am; _cfg = cfg; }
+        private readonly TechMoveApiService _api;
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto d)
+        public AccountController(TechMoveApiService api) => _api = api;
+
+        // GET /Account/Login
+        [HttpGet]
+        [Route("Account/Login")]
+        public IActionResult Login() => View();
+
+        // POST /Account/Login
+        [HttpPost]
+        [Route("Account/Login")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(string email, string password)
         {
-            var admin = await _am.FindByEmailAsync(d.Email);
-            if (admin != null && await _am.CheckPasswordAsync(admin, d.Password))
-                return Ok(new { Token = Token(admin.Id, "Admin"), Role = "Admin", admin.FullName });
-            var client = await _cm.FindByEmailAsync(d.Email);
-            if (client != null && await _cm.CheckPasswordAsync(client, d.Password))
-                return Ok(new { Token = Token(client.Id, "Client"), Role = "Client", client.FullName });
-            return Unauthorized(new { Message = "Invalid credentials" });
+            var result = await _api.LoginAsync(email, password);
+
+            if (result == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                return View();
+            }
+
+            // Store JWT and user info in the session
+            HttpContext.Session.SetString("JwtToken", result.Value.GetProperty("token").GetString()!);
+            HttpContext.Session.SetString("UserRole",  result.Value.GetProperty("role").GetString()!);
+            HttpContext.Session.SetString("FullName",  result.Value.GetProperty("fullName").GetString()!);
+
+            var role = result.Value.GetProperty("role").GetString();
+
+            return role == "Admin"
+                ? RedirectToAction("Dashboard", "Admin")
+                : RedirectToAction("Dashboard", "Client");
         }
 
-        private string Token(string uid, string role)
+        // GET /Account/Logout
+        [HttpGet]
+        [Route("Account/Logout")]
+        public IActionResult Logout()
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_cfg["Jwt:Key"]!));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var claims = new[] { new Claim(ClaimTypes.NameIdentifier, uid), new Claim(ClaimTypes.Role, role) };
-            var token = new JwtSecurityToken(_cfg["Jwt:Issuer"], _cfg["Jwt:Audience"], claims, expires: DateTime.Now.AddHours(3), signingCredentials: creds);
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
         }
     }
-    public class LoginDto { public string Email { get; set; } = ""; public string Password { get; set; } = ""; }
 }
