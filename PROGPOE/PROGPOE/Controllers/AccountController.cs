@@ -3,12 +3,6 @@ using PROGPOE.Services;
 
 namespace PROGPOE.Controllers
 {
-    // ─────────────────────────────────────────────────────────────────────────
-    //  MVC Account Controller
-    //  Handles the login page and delegates authentication to TechMoveAPI.
-    //  On success, stores the JWT in the session so TechMoveApiService can
-    //  attach it to outbound API calls automatically.
-    // ─────────────────────────────────────────────────────────────────────────
     public class AccountController : Controller
     {
         private readonly TechMoveApiService _api;
@@ -34,13 +28,13 @@ namespace PROGPOE.Controllers
                 return View();
             }
 
-            // Store JWT and user info in the session
-            HttpContext.Session.SetString("JwtToken", result.Value.GetProperty("Token").GetString()!);
-            HttpContext.Session.SetString("UserRole", result.Value.GetProperty("Role").GetString()!);
-            HttpContext.Session.SetString("FullName", result.Value.GetProperty("FullName").GetString()!);
+            // ASP.NET Core serialises anonymous types as camelCase, so the
+            // JSON keys are "token", "role", "fullName" — NOT "Token" etc.
+            HttpContext.Session.SetString("JwtToken",  result.Value.GetProperty("token").GetString()!);
+            HttpContext.Session.SetString("UserRole",  result.Value.GetProperty("role").GetString()!);
+            HttpContext.Session.SetString("FullName",  result.Value.GetProperty("fullName").GetString()!);
 
-            // Get the role using the correct property name (capital "Role")
-            var role = result.Value.GetProperty("Role").GetString();
+            var role = result.Value.GetProperty("role").GetString();
 
             return role == "Admin"
                 ? RedirectToAction("Dashboard", "Admin")

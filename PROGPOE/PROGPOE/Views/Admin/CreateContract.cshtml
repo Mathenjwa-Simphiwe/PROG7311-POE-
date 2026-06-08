@@ -1,0 +1,73 @@
+@model List<PROGPOE.ViewModels.ClientViewModel>
+@{
+    ViewData["Title"] = "Create Contract";
+    Layout = "_Layout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-plus-circle me-2"></i>Create New Contract</h2>
+    <a href="/Admin/Contracts" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Contracts
+    </a>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="post" action="/Admin/CreateContract" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Client <span class="text-danger">*</span></label>
+                    <select name="clientId" class="form-select" required>
+                        <option value="">— Select a client —</option>
+                        @foreach (var c in Model)
+                        {
+                            <option value="@c.Id">@c.FullName (@c.Email)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Service Level <span class="text-danger">*</span></label>
+                    <select name="serviceLevel" class="form-select" required>
+                        <option value="0">Standard</option>
+                        <option value="1">Premium</option>
+                        <option value="2">Enterprise</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Start Date <span class="text-danger">*</span></label>
+                    <input type="date" name="startDate" class="form-control"
+                           value="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">End Date <span class="text-danger">*</span></label>
+                    <input type="date" name="endDate" class="form-control"
+                           value="@DateTime.Today.AddYears(1).ToString("yyyy-MM-dd")" required>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Signed Agreement (PDF, optional)</label>
+                    <input type="file" name="agreement" class="form-control" accept=".pdf">
+                    <div class="form-text">Max 10 MB. PDF only.</div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-2"></i>Create Contract
+                </button>
+                <a href="/Admin/Contracts" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

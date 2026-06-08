@@ -23,7 +23,7 @@ builder.Services.AddHttpClient<TechMoveApiService>(client =>
 
 // ─── MVC ──────────────────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
 
 // ─── BUILD ────────────────────────────────────────────────────────────────
 var app = builder.Build();

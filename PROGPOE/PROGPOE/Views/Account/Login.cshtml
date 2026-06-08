@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Login";
     Layout = "_Layout";
 }
@@ -10,84 +10,39 @@
                 <h4 class="mb-0">TechMove Login</h4>
             </div>
             <div class="card-body">
-                <div id="errorMessage" class="alert alert-danger" style="display:none;"></div>
-                <div id="successMessage" class="alert alert-success" style="display:none;"></div>
-                
-                <form id="loginForm">
+
+                @* Show any server-side errors (e.g. wrong password) *@
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
+                }
+
+                @* Standard HTML form – posts to AccountController.Login(POST) *@
+                <form method="post" action="/Account/Login">
+                    @Html.AntiForgeryToken()
                     <div class="mb-3">
                         <label>Email</label>
-                        <input type="email" id="email" class="form-control" value="admin@glms.com" required>
+                        <input type="email" name="email" class="form-control" value="admin@glms.com" required>
                     </div>
                     <div class="mb-3">
                         <label>Password</label>
-                        <input type="password" id="password" class="form-control" value="Admin@123" required>
+                        <input type="password" name="password" class="form-control" value="Admin@123" required>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100" id="loginBtn">Login</button>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
                 </form>
+
                 <hr>
                 <div class="text-center">
                     <small>Admin: admin@glms.com / Admin@123</small><br>
                     <small>Client: client@test.com / Client@123</small>
                 </div>
+
             </div>
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
-            
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = 'Logging in...';
-            
-            try {
-                const response = await fetch('https://localhost:7254/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Store in localStorage
-                    localStorage.setItem('token', data.Token || data.token);
-                    localStorage.setItem('role', data.Role || data.role);
-                    localStorage.setItem('fullName', data.FullName || data.fullName);
-                    
-                    const role = data.Role || data.role;
-                    
-                    document.getElementById('successMessage').style.display = 'block';
-                    document.getElementById('successMessage').textContent = 'Login successful! Redirecting...';
-                    
-                    // Use direct location replacement instead of href
-                    setTimeout(function() {
-                        if (role === 'Admin') {
-                            window.location.replace('/Admin/Dashboard');
-                        } else {
-                            window.location.replace('/Client/Dashboard');
-                        }
-                    }, 500);
-                    
-                } else {
-                    document.getElementById('errorMessage').style.display = 'block';
-                    document.getElementById('errorMessage').textContent = 'Invalid email or password';
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = 'Login';
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                document.getElementById('errorMessage').style.display = 'block';
-                document.getElementById('errorMessage').textContent = 'Network error. Check if the API is running.';
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = 'Login';
-            }
-        });
-    </script>
-}

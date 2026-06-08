@@ -6,13 +6,13 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="fas fa-file-contract me-2"></i>Contract Management</h2>
-    <a href="/Admin/Contracts/Create" class="btn btn-success">
+    <a href="/Admin/CreateContract" class="btn btn-success">
         <i class="fas fa-plus-circle me-2"></i>Create New Contract
     </a>
 </div>
 
 <!-- Filter Form -->
-<form method="get" class="card mb-4">
+<form method="get" action="/Admin/Contracts" class="card mb-4">
     <div class="card-header"><h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Contracts</h5></div>
     <div class="card-body">
         <div class="row g-3">
@@ -68,6 +68,10 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="8" class="text-center text-muted py-4">No contracts found.</td></tr>
+                    }
                     @foreach (var c in Model)
                     {
                         <tr>
@@ -76,11 +80,16 @@
                             <td>@c.StartDate.ToShortDateString()</td>
                             <td>@c.EndDate.ToShortDateString()</td>
                             <td><span class="badge bg-secondary">@c.ServiceLevel</span></td>
-                            <td><span class="badge bg-@(c.Status == "Active" ? "success" : c.Status == "Expired" ? "danger" : "warning")">@c.Status</span></td>
+                            <td>
+                                <span class="badge bg-@(c.Status == "Active" ? "success" : c.Status == "Expired" ? "danger" : "warning")">
+                                    @c.Status
+                                </span>
+                            </td>
                             <td>
                                 @if (c.HasAgreement)
                                 {
-                                    <a href="https://localhost:7254/api/contracts/@c.ContractId/download" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <a href="https://localhost:7254/api/contracts/@c.ContractId/download"
+                                       target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-download"></i>
                                     </a>
                                 }
@@ -90,21 +99,33 @@
                                 }
                             </td>
                             <td class="d-flex gap-1">
-                                <form method="post" action="/Admin/Contracts/UpdateStatus" class="d-inline">
+                                @* Change status *@
+                                <form method="post" action="/Admin/UpdateStatus" class="d-inline">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@c.ContractId" />
                                     <select name="status" class="form-select form-select-sm d-inline w-auto">
-                                        <option value="0">Draft</option>
-                                        <option value="1">Active</option>
-                                        <option value="2">Expired</option>
-                                        <option value="3">On Hold</option>
-                                        <option value="4">Terminated</option>
+                                        <option value="0" selected="@(c.Status=="Draft")">Draft</option>
+                                        <option value="1" selected="@(c.Status=="Active")">Active</option>
+                                        <option value="2" selected="@(c.Status=="Expired")">Expired</option>
+                                        <option value="3" selected="@(c.Status=="OnHold")">On Hold</option>
+                                        <option value="4" selected="@(c.Status=="Terminated")">Terminated</option>
                                     </select>
-                                    <button type="submit" class="btn btn-sm btn-warning"><i class="fas fa-exchange-alt"></i></button>
+                                    <button type="submit" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </button>
                                 </form>
-                                <a href="/Admin/Contracts/Edit/@c.ContractId" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
-                                <form method="post" action="/Admin/Contracts/Delete" onsubmit="return confirm('Delete contract @c.ContractNumber?')">
+                                @* Edit *@
+                                <a href="/Admin/EditContract/@c.ContractId" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                @* Delete *@
+                                <form method="post" action="/Admin/DeleteContract"
+                                      onsubmit="return confirm('Delete contract @c.ContractNumber?')">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@c.ContractId" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </form>
                             </td>
                         </tr>
