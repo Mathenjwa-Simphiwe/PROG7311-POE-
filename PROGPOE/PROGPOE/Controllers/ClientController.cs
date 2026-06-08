@@ -22,9 +22,9 @@ namespace PROGPOE.Controllers
 
             var model = new ClientDashboardViewModel
             {
-                TotalContracts = GetInt(data, "totalContracts"),
-                ActiveContracts = GetInt(data, "activeContracts"),
-                PendingRequests = GetInt(data, "pendingRequests")
+                TotalContracts = GetInt((JsonElement)data, "totalContracts"),
+                ActiveContracts = GetInt((JsonElement)data, "activeContracts"),
+                PendingRequests = GetInt((JsonElement)data, "pendingRequests")
             };
             return View(model);
         }
@@ -79,6 +79,52 @@ namespace PROGPOE.Controllers
                 }
             }
             return View(requests);
+
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> SignContract(int id)
+        {
+            var result = await _api.PatchContractStatusAsync(id, 1);
+            if (result == null) TempData["Error"] = "Failed to activate contract.";
+            else TempData["Success"] = "Contract activated!";
+            return RedirectToAction("ClientContracts");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetContracts()
+        {
+            var data = await _api.GetContractsAsync();
+            var list = new List<object>();
+            if (data?.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in data.Value.EnumerateArray())
+                {
+                    list.Add(new { contractId = GetInt(item, "contractId"), contractNumber = GetString(item, "contractNumber"), status = GetString(item, "status") });
+                }
+            }
+            return Ok(list);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] object dto)
+        {
+            var result = await _api.CreateServiceRequestAsync(dto);
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, [FromBody] object dto)
+        {
+            var result = await _api.UpdateServiceRequestAsync(id, dto); // you need to add this method to TechMoveApiService
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _api.DeleteServiceRequestAsync(id);
+            return Ok(result);
         }
 
         // Same helper methods as in AdminController (copy them here or move to a static utility class)

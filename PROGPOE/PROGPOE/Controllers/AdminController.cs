@@ -30,10 +30,10 @@ namespace PROGPOE.Controllers
 
             var model = new AdminDashboardViewModel
             {
-                TotalContracts = GetInt(data, "totalContracts"),
-                ActiveContracts = GetInt(data, "activeContracts"),
-                PendingRequests = GetInt(data, "pendingRequests"),
-                TotalClients = GetInt(data, "totalClients")
+                TotalContracts = GetInt((JsonElement)data, "TotalContracts"),
+                ActiveContracts = GetInt((JsonElement)data, "ActiveContracts"),
+                PendingRequests = GetInt((JsonElement)data, "PendingRequests"),
+                TotalClients = GetInt((JsonElement)data, "TotalClients")
             };
             return View(model);
         }
@@ -98,6 +98,50 @@ namespace PROGPOE.Controllers
                 }
             }
             return View(requests);
+        }
+        [HttpPost]
+        public async Task<IActionResult> SignContract(int id)
+        {
+            var result = await _api.PatchContractStatusAsync(id, 1);
+            if (result == null) TempData["Error"] = "Failed to activate contract.";
+            else TempData["Success"] = "Contract activated!";
+            return RedirectToAction("ClientContracts");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetContracts()
+        {
+            var data = await _api.GetContractsAsync();
+            var list = new List<object>();
+            if (data?.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in data.Value.EnumerateArray())
+                {
+                    list.Add(new { contractId = GetInt(item, "contractId"), contractNumber = GetString(item, "contractNumber"), status = GetString(item, "status") });
+                }
+            }
+            return Ok(list);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] object dto)
+        {
+            var result = await _api.CreateServiceRequestAsync(dto);
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, [FromBody] object dto)
+        {
+            var result = await _api.UpdateServiceRequestAsync(id, dto); // you need to add this method to TechMoveApiService
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _api.DeleteServiceRequestAsync(id);
+            return Ok(result);
         }
         private static int GetInt(JsonElement el, string prop) =>
           el.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetInt32() : 0;

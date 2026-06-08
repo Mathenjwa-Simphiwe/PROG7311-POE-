@@ -1,4 +1,5 @@
-﻿@{
+﻿@model PROGPOE.ViewModels.AdminDashboardViewModel
+@{
     ViewData["Title"] = "Admin Dashboard";
     Layout = "_Layout";
 }
@@ -7,93 +8,37 @@
     <h2><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h2>
 </div>
 
-<div class="row" id="statsRow">
-    <div class="col-12 text-center py-4">
-        <div class="spinner-border text-primary"></div>
-        <p class="mt-2">Loading dashboard...</p>
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h6>Total Contracts</h6>
+                <h2>@Model.TotalContracts</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h6>Active Contracts</h6>
+                <h2>@Model.ActiveContracts</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h6>Pending Requests</h6>
+                <h2>@Model.PendingRequests</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h6>Total Clients</h6>
+                <h2>@Model.TotalClients</h2>
+            </div>
+        </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        async function loadDashboard() {
-            try {
-                const token = localStorage.getItem('token');
-                const baseUrl = window.location.origin;
-                
-                const response = await fetch(API_BASE_URL +  '/api/dashboard', {
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    document.getElementById('statsRow').innerHTML = `
-                        <div class="col-md-3 mb-3">
-                            <div class="card bg-primary text-white">
-                                <div class="card-body text-center">
-                                    <h6>Total Contracts</h6>
-                                    <h2>${data.totalContracts || 0}</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="card bg-success text-white">
-                                <div class="card-body text-center">
-                                    <h6>Active Contracts</h6>
-                                    <h2>${data.activeContracts || 0}</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="card bg-warning text-white">
-                                <div class="card-body text-center">
-                                    <h6>Pending Requests</h6>
-                                    <h2>${data.pendingRequests || 0}</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="card bg-info text-white">
-                                <div class="card-body text-center">
-                                    <h6>Total Clients</h6>
-                                    <h2>${data.totalClients || 0}</h2>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    document.getElementById('statsRow').innerHTML = `
-                        <div class="col-12">
-                            <div class="alert alert-danger">
-                                Failed to load dashboard. Please login again.
-                            </div>
-                        </div>
-                    `;
-                }
-            } catch (err) {
-                console.error('Dashboard error:', err);
-                document.getElementById('statsRow').innerHTML = `
-                    <div class="col-12">
-                        <div class="alert alert-danger">
-                            Error loading dashboard. Check console.
-                        </div>
-                    </div>
-                `;
-            }
-        }
-        
-        // Check if logged in
-        const token = localStorage.getItem('token');
-        const role = localStorage.getItem('role');
-        
-        if (!token || role !== 'Admin') {
-            window.location.href = '/Account/Login';
-        } else {
-            loadDashboard();
-        }
-    </script>
-}

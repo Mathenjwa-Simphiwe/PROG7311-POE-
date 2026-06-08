@@ -1,3 +1,4 @@
+@model List<PROGPOE.ViewModels.ServiceRequestViewModel>
 @{
     ViewData["Title"] = "My Service Requests";
     Layout = "_Layout";
@@ -10,7 +11,14 @@
     </button>
 </div>
 
-<div id="alertArea"></div>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
 
 <div class="card">
     <div class="card-body p-0">
@@ -18,281 +26,205 @@
             <table class="table table-hover mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th>ID</th><th>Type</th><th>Contract</th><th>Description</th>
-                        <th>Base Cost</th><th>USD</th><th>ZAR</th><th>Status</th><th>Actions</th>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Contract</th>
+                        <th>Description</th>
+                        <th>Base Cost</th>
+                        <th>USD</th>
+                        <th>ZAR</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody id="requestsBody">
-                    <tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td><small class="text-muted">@r.RequestId</small></td>
+                            <td>@r.Type</td>
+                            <td>@r.ContractNumber</td>
+                            <td>@r.Description</td>
+                            <td>@(r.Cost.HasValue ? $"R {r.Cost.Value:F2}" : "—")</td>
+                            <td>@(r.LocalCostZar.HasValue ? "$ " + (r.LocalCostZar.Value / 19).ToString("F2") : "—")</td>
+                            <td>@(r.LocalCostZar.HasValue ? $"R {r.LocalCostZar.Value:F2}" : "—")</td>
+                            <td><span class="badge bg-@(r.Status == "Pending" ? "warning" : r.Status == "Approved" ? "success" : "secondary")">@r.Status</span></td>
+                            <td class="d-flex gap-1">
+                                @if (r.Status == "Pending")
+                                {
+                                    <button class="btn btn-sm btn-outline-warning" onclick="openEdit(@r.ServiceRequestId, '@r.Description.Replace("'", "\\'")')"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(@r.ServiceRequestId, '@r.RequestId')"><i class="fas fa-trash"></i></button>
+                                }
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- CREATE MODAL (POST) -->
-<div class="modal fade" id="createModal" tabindex="-1" data-bs-backdrop="static">
+<!-- CREATE MODAL -->
+<div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Raise New Request</h5>
+                <h5 class="modal-title">Raise New Request</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div id="createAlert"></div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Contract</label>
-                    <select id="contractSelect" class="form-select"></select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Request Type</label>
-                    <select id="reqType" class="form-select" onchange="toggleFields()">
-                        <option value="0">Freight</option>
-                        <option value="1">Maintenance</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Origin</label>
-                    <input type="text" id="reqOrigin" class="form-control" placeholder="e.g. Cape Town">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Description</label>
-                    <textarea id="reqDesc" class="form-control" rows="2"></textarea>
-                </div>
-                <div id="freightFields">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Destination</label>
-                            <input type="text" id="reqDest" class="form-control">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Weight (kg)</label>
-                            <input type="number" id="reqWeight" class="form-control" min="0.1" step="0.1">
+                <form id="createForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label>Contract</label>
+                        <select id="contractId" class="form-select" required></select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Request Type</label>
+                        <select id="requestType" class="form-select" onchange="toggleFields()">
+                            <option value="0">Freight</option>
+                            <option value="1">Maintenance</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Origin</label>
+                        <input type="text" id="origin" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Description</label>
+                        <textarea id="description" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <div id="freightFields">
+                        <div class="row">
+                            <div class="col-md-6"><label>Destination</label><input type="text" id="destination" class="form-control"></div>
+                            <div class="col-md-6"><label>Weight (kg)</label><input type="number" id="weight" class="form-control" step="0.1"></div>
                         </div>
                     </div>
-                </div>
-                <div id="maintFields" style="display:none;">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Equipment Type</label>
-                            <input type="text" id="reqEquip" class="form-control">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Estimated Hours</label>
-                            <input type="number" id="reqHours" class="form-control" min="1">
+                    <div id="maintFields" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6"><label>Equipment Type</label><input type="text" id="equipment" class="form-control"></div>
+                            <div class="col-md-6"><label>Estimated Hours</label><input type="number" id="hours" class="form-control"></div>
                         </div>
                     </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">USD Amount (optional)</label>
-                    <input type="number" id="reqUsd" class="form-control" min="0" step="0.01" placeholder="Enter USD for ZAR conversion">
-                </div>
+                    <div class="mb-3">
+                        <label>USD Amount (optional)</label>
+                        <input type="number" id="usdAmount" class="form-control" step="0.01">
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary" id="createBtn" onclick="submitCreate()">
-                    <i class="fas fa-paper-plane me-2"></i>Submit
-                </button>
+                <button class="btn btn-primary" onclick="submitCreate()">Submit</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- EDIT MODAL (PUT) -->
+<!-- EDIT MODAL -->
 <div class="modal fade" id="editModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-warning">
-                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Request</h5>
+                <h5 class="modal-title">Edit Request</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="editAlert"></div>
-                <div class="mb-3">
-                    <label class="form-label">Origin</label>
-                    <input type="text" id="eOrigin" class="form-control">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <textarea id="eDesc" class="form-control" rows="3"></textarea>
-                </div>
+                <form id="editForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="editId" />
+                    <div class="mb-3">
+                        <label>Origin</label>
+                        <input type="text" id="editOrigin" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Description</label>
+                        <textarea id="editDescription" class="form-control" rows="3" required></textarea>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-warning" onclick="submitEdit()"><i class="fas fa-save me-2"></i>Save</button>
+                <button class="btn btn-warning" onclick="submitEdit()">Save</button>
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
 <script>
-    const token = localStorage.getItem('token');
-    const role  = localStorage.getItem('role');
-    if (!token || role !== 'Client') { window.location.href = '/Account/Login'; }
-
-    let currentId = null;
-
-    const statusBadge = s => {
-        const m = { Pending:'warning', Approved:'success', InProgress:'info', Completed:'primary', Denied:'danger' };
-        return `<span class="badge bg-${m[s]||'secondary'}">${s}</span>`;
-    };
-
-        async function authFetch(url, opts = {}) {
-          const fullUrl = url.startsWith('http') ? url : window.API_BASE_URL + url;
-          return fetch(fullUrl, { ...opts, headers: { 'Authorization': 'Bearer ' + token, ...(opts.headers||{}) } });
-    }
-
-    function showAlert(type, msg, area='alertArea') {
-        document.getElementById(area).innerHTML =
-            `<div class="alert alert-${type} alert-dismissible fade show">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-    }
-
-    // ── GET ─────────────────────────────────────────────────────────
-    async function loadRequests() {
-        const body = document.getElementById('requestsBody');
-        body.innerHTML = '<tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
-        try {
-            const res  = await authFetch('/api/service-requests');
-            const list = res.ok ? await res.json() : [];
-            if (!list.length) {
-                body.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x d-block mb-2"></i>No requests yet.</td></tr>';
-                return;
-            }
-            body.innerHTML = list.map(r => `
-                <tr>
-                    <td><small class="text-muted">${r.requestId}</small></td>
-                    <td>${r.type}</td>
-                    <td>${r.contractNumber}</td>
-                    <td>${r.description}</td>
-                    <td>${r.cost ? 'R '+Number(r.cost).toFixed(2) : '—'}</td>
-                    <td>${r.usdAmount ? '$'+Number(r.usdAmount).toFixed(2) : '—'}</td>
-                    <td>${r.localCostZar ? 'R '+Number(r.localCostZar).toFixed(2) : '—'}</td>
-                    <td>${statusBadge(r.status)}</td>
-                    <td class="d-flex gap-1">
-                        ${r.status === 'Pending' ? `
-                        <button class="btn btn-sm btn-outline-warning" title="PUT Edit"
-                            onclick="openEdit(${r.serviceRequestId},'${r.origin}',${JSON.stringify(r.description)})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" title="DELETE Cancel"
-                            onclick="cancelRequest(${r.serviceRequestId},'${r.requestId}')">
-                            <i class="fas fa-trash"></i>
-                        </button>` : '<span class="text-muted small">—</span>'}
-                    </td>
-                </tr>`).join('');
-        } catch { body.innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">Network error.</td></tr>'; }
-    }
-
-    // ── POST (create) ───────────────────────────────────────────────
+    // Load contracts for the create dropdown
     async function loadContracts() {
-        const sel = document.getElementById('contractSelect');
-        sel.innerHTML = '<option value="">Loading...</option>';
-        const res = await authFetch('/api/contracts');
-        const list = res.ok ? await res.json() : [];
-        sel.innerHTML = list.filter(c => c.status === 'Active' || c.status === 'Draft').length
-            ? '<option value="">— Select contract —</option>' + list.filter(c => c.status==='Active'||c.status==='Draft').map(c => `<option value="${c.contractId}">${c.contractNumber} (${c.status})</option>`).join('')
-            : '<option value="">No active contracts</option>';
+        const response = await fetch('/Client/Requests/GetContracts');
+        const contracts = await response.json();
+        const sel = document.getElementById('contractId');
+        sel.innerHTML = contracts.map(c => `<option value="${c.contractId}">${c.contractNumber} (${c.status})</option>`).join('');
     }
 
     function toggleFields() {
-        const t = document.getElementById('reqType').value;
-        document.getElementById('freightFields').style.display = t === '0' ? '' : 'none';
-        document.getElementById('maintFields').style.display   = t === '1' ? '' : 'none';
+        const type = document.getElementById('requestType').value;
+        document.getElementById('freightFields').style.display = type === '0' ? 'block' : 'none';
+        document.getElementById('maintFields').style.display = type === '1' ? 'block' : 'none';
     }
 
     function openCreateModal() {
         loadContracts();
-        document.getElementById('reqOrigin').value = '';
-        document.getElementById('reqDesc').value   = '';
-        document.getElementById('reqDest').value   = '';
-        document.getElementById('reqWeight').value = '';
-        document.getElementById('reqEquip').value  = '';
-        document.getElementById('reqHours').value  = '';
-        document.getElementById('reqUsd').value    = '';
+        document.getElementById('createForm').reset();
         document.getElementById('createAlert').innerHTML = '';
-        toggleFields();
         new bootstrap.Modal(document.getElementById('createModal')).show();
     }
 
     async function submitCreate() {
-        const alertEl = document.getElementById('createAlert');
-        const body = {
-            contractId: parseInt(document.getElementById('contractSelect').value),
-            type:       parseInt(document.getElementById('reqType').value),
-            origin:     document.getElementById('reqOrigin').value,
-            desc:       document.getElementById('reqDesc').value,
-            dest:       document.getElementById('reqDest').value || null,
-            weight:     parseFloat(document.getElementById('reqWeight').value) || null,
-            equip:      document.getElementById('reqEquip').value || null,
-            hours:      parseInt(document.getElementById('reqHours').value) || null,
-            usdAmount:  parseFloat(document.getElementById('reqUsd').value) || null
+        const data = {
+            contractId: parseInt(document.getElementById('contractId').value),
+            type: parseInt(document.getElementById('requestType').value),
+            origin: document.getElementById('origin').value,
+            description: document.getElementById('description').value,
+            destination: document.getElementById('destination').value,
+            weightKg: parseFloat(document.getElementById('weight').value) || null,
+            equipmentType: document.getElementById('equipment').value,
+            estimatedHours: parseInt(document.getElementById('hours').value) || null,
+            usdAmount: parseFloat(document.getElementById('usdAmount').value) || null
         };
-
-        if (!body.contractId) { alertEl.innerHTML = '<div class="alert alert-danger">Please select a contract.</div>'; return; }
-        if (!body.origin || !body.desc) { alertEl.innerHTML = '<div class="alert alert-danger">Origin and Description are required.</div>'; return; }
-
-        const btn = document.getElementById('createBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
-
-        try {
-            const res  = await authFetch('/api/client/service-requests', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            const data = await res.json();
-            if (res.ok) {
-                bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
-                showAlert('success', '<i class="fas fa-check-circle me-2"></i>Request submitted successfully!');
-                loadRequests();
-            } else {
-                alertEl.innerHTML = `<div class="alert alert-danger">${data.message||'Failed.'}</div>`;
-            }
-        } catch {
-            alertEl.innerHTML = '<div class="alert alert-danger">Network error.</div>';
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit';
+        const response = await fetch('/Client/Requests/Create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (response.ok) {
+            location.reload();
+        } else {
+            document.getElementById('createAlert').innerHTML = `<div class="alert alert-danger">${result.message || 'Error'}</div>`;
         }
     }
 
-    // ── PUT (edit) ──────────────────────────────────────────────────
-    function openEdit(id, origin, description) {
-        currentId = id;
-        document.getElementById('eOrigin').value = origin;
-        document.getElementById('eDesc').value   = description;
-        document.getElementById('editAlert').innerHTML = '';
+    function openEdit(id, description) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editDescription').value = description;
         new bootstrap.Modal(document.getElementById('editModal')).show();
     }
 
     async function submitEdit() {
-        if (!currentId) return;
-        try {
-            const res  = await authFetch(`/api/client/service-requests/${currentId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ origin: document.getElementById('eOrigin').value, description: document.getElementById('eDesc').value })
-            });
-            const data = await res.json();
-            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-            showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Updated.' : 'Failed.'));
-            if (res.ok) loadRequests();
-        } catch { showAlert('danger', 'Network error.'); }
+        const id = document.getElementById('editId').value;
+        const data = {
+            origin: document.getElementById('editOrigin').value,
+            description: document.getElementById('editDescription').value
+        };
+        const response = await fetch(`/Client/Requests/Edit/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]') },
+            body: JSON.stringify(data)
+        });
+        if (response.ok) location.reload();
+        else alert('Error updating request');
     }
 
-    // ── DELETE ──────────────────────────────────────────────────────
-    async function cancelRequest(id, reqId) {
+    async function deleteRequest(id, reqId) {
         if (!confirm(`Cancel request ${reqId}?`)) return;
-        try {
-            const res  = await authFetch(`/api/client/service-requests/${id}`, { method: 'DELETE' });
-            const data = await res.json();
-            showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Cancelled.' : 'Failed.'));
-            if (res.ok) loadRequests();
-        } catch { showAlert('danger', 'Network error.'); }
+        const response = await fetch(`/Client/Requests/Delete/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]') } });
+        if (response.ok) location.reload();
+        else alert('Error deleting request');
     }
 
-    loadRequests();
+    toggleFields();
 </script>
-}

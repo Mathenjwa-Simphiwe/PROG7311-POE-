@@ -12,3 +12,5 @@
         public string? ClientId { get; set; }
         public bool HasAgreement { get; set; }
     }
+
+}

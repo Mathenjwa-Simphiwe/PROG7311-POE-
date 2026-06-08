@@ -1,3 +1,4 @@
+@model List<PROGPOE.ViewModels.ContractViewModel>
 @{
     ViewData["Title"] = "My Contracts";
     Layout = "_Layout";
@@ -7,116 +8,75 @@
     <h2><i class="fas fa-file-contract me-2"></i>My Contracts</h2>
 </div>
 
-<div id="alertArea"></div>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
 
-<!-- Filter -->
-<div class="card mb-3">
+<form method="get" class="card mb-3">
     <div class="card-body py-2">
         <div class="row g-2 align-items-center">
             <div class="col-auto">
                 <label class="col-form-label fw-semibold">Filter by Status:</label>
             </div>
             <div class="col-auto">
-                <select id="filterStatus" class="form-select form-select-sm" onchange="loadContracts()">
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
                     <option value="">All</option>
-                    <option value="0">Draft</option>
-                    <option value="1">Active</option>
-                    <option value="2">Expired</option>
-                    <option value="3">On Hold</option>
+                    <option value="0" selected="@(Context.Request.Query["status"] == "0")">Draft</option>
+                    <option value="1" selected="@(Context.Request.Query["status"] == "1")">Active</option>
+                    <option value="2" selected="@(Context.Request.Query["status"] == "2")">Expired</option>
+                    <option value="3" selected="@(Context.Request.Query["status"] == "3")">On Hold</option>
                 </select>
             </div>
         </div>
     </div>
+</form>
+
+<div class="row">
+    @if (!Model.Any())
+    {
+        <div class="col-12"><div class="alert alert-info"><i class="fas fa-inbox me-2"></i>No contracts found.</div></div>
+    }
+    else
+    {
+        foreach (var c in Model)
+        {
+            var statusClass = c.Status == "Active" ? "success" : c.Status == "Expired" ? "danger" : c.Status == "On Hold" ? "warning" : "secondary";
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>@c.ContractNumber</strong>
+                        <span class="badge bg-@statusClass">@c.Status</span>
+                    </div>
+                    <div class="card-body">
+                        <p><i class="fas fa-calendar-alt me-2 text-muted"></i>Start: @c.StartDate.ToShortDateString()</p>
+                        <p><i class="fas fa-calendar-check me-2 text-muted"></i>End: @c.EndDate.ToShortDateString()</p>
+                        <p><i class="fas fa-layer-group me-2 text-muted"></i>Level: @c.ServiceLevel</p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        @if (c.Status == "Draft")
+                        {
+                            <form method="post" action="/Client/ClientContracts/Sign" onsubmit="return confirm('Sign and activate contract @c.ContractNumber?');">
+                                <input type="hidden" name="id" value="@c.ContractId" />
+                                <button type="submit" class="btn btn-sm btn-success w-100">
+                                    <i class="fas fa-signature me-2"></i>Sign & Activate
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-muted small">
+                                <i class="fas fa-info-circle me-1"></i>
+                                @(c.Status == "Active" ? "Contract is active — raise requests from My Requests." : "Contract is " + c.Status.ToLower() + ".")
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
 </div>
-
-<div class="row" id="contractsRow">
-    <div class="col-12 text-center py-4">
-        <div class="spinner-border text-primary"></div>
-        <p class="mt-2">Loading contracts...</p>
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-        const token = localStorage.getItem('token');
-        const role  = localStorage.getItem('role');
-        if (!token || role !== 'Client') { window.location.href = '/Account/Login'; }
-
-        function showAlert(type, msg) {
-            document.getElementById('alertArea').innerHTML =
-                `<div class="alert alert-${type} alert-dismissible fade show">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-        }
-
-        async function authFetch(url, opts = {}) {
-            const fullUrl = url.startsWith('http') ? url : window.API_BASE_URL + url;
-            return fetch(fullUrl, { ...opts, headers: { 'Authorization': 'Bearer ' + token, ...(opts.headers||{}) } });
-        }
-
-        async function loadContracts() {
-            const row = document.getElementById('contractsRow');
-            row.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2">Loading...</p></div>';
-
-            const st  = document.getElementById('filterStatus').value;
-            const url = '/api/contracts' + (st !== '' ? '?status=' + st : '');
-
-            try {
-                const res       = await authFetch(url);
-                const contracts = res.ok ? await res.json() : [];
-
-                if (!contracts.length) {
-                    row.innerHTML = '<div class="col-12"><div class="alert alert-info"><i class="fas fa-inbox me-2"></i>No contracts found.</div></div>';
-                    return;
-                }
-
-                row.innerHTML = contracts.map(c => {
-                    const isDraft   = c.status === 'Draft';
-                    const statusCls = c.status === 'Active' ? 'success' : c.status === 'Expired' ? 'danger' : c.status === 'On Hold' ? 'warning' : 'secondary';
-                    return `
-                        <div class="col-md-6 mb-3">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <strong>${c.contractNumber}</strong>
-                                    <span class="badge bg-${statusCls}">${c.status}</span>
-                                </div>
-                                <div class="card-body">
-                                    <p class="mb-1"><i class="fas fa-calendar-alt me-2 text-muted"></i>
-                                        <strong>Start:</strong> ${new Date(c.startDate).toLocaleDateString()}</p>
-                                    <p class="mb-1"><i class="fas fa-calendar-check me-2 text-muted"></i>
-                                        <strong>End:</strong> ${new Date(c.endDate).toLocaleDateString()}</p>
-                                    <p class="mb-0"><i class="fas fa-layer-group me-2 text-muted"></i>
-                                        <strong>Level:</strong> ${c.serviceLevel}</p>
-                                </div>
-                                <div class="card-footer bg-transparent">
-                                    ${isDraft
-                                        ? `<button class="btn btn-sm btn-success w-100" onclick="signContract(${c.contractId},'${c.contractNumber}')">
-                                               <i class="fas fa-signature me-2"></i>Sign & Activate (PATCH)
-                                           </button>`
-                                        : `<span class="text-muted small"><i class="fas fa-info-circle me-1"></i>
-                                               ${c.status === 'Active' ? 'Contract is active — raise requests from <a href="/Client/Requests">My Requests</a>.' : 'Contract is ' + c.status.toLowerCase() + '.'}
-                                           </span>`}
-                                </div>
-                            </div>
-                        </div>`;
-                }).join('');
-            } catch {
-                row.innerHTML = '<div class="col-12"><div class="alert alert-danger">Network error loading contracts.</div></div>';
-            }
-        }
-
-        async function signContract(id, number) {
-            if (!confirm(`Sign and activate contract ${number}?`)) return;
-            try {
-                const res = await authFetch(`/api/contracts/${id}/status`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: 1 })   // 1 = Active
-                });
-                const data = await res.json();
-                showAlert(res.ok ? 'success' : 'danger', data.message || (res.ok ? 'Contract activated!' : 'Failed.'));
-                if (res.ok) loadContracts();
-            } catch { showAlert('danger', 'Network error.'); }
-        }
-
-        loadContracts();
-    </script>
-}

@@ -35,11 +35,12 @@ namespace PROGPOE.Controllers
             }
 
             // Store JWT and user info in the session
-            HttpContext.Session.SetString("JwtToken", result.Value.GetProperty("token").GetString()!);
-            HttpContext.Session.SetString("UserRole",  result.Value.GetProperty("role").GetString()!);
-            HttpContext.Session.SetString("FullName",  result.Value.GetProperty("fullName").GetString()!);
+            HttpContext.Session.SetString("JwtToken", result.Value.GetProperty("Token").GetString()!);
+            HttpContext.Session.SetString("UserRole", result.Value.GetProperty("Role").GetString()!);
+            HttpContext.Session.SetString("FullName", result.Value.GetProperty("FullName").GetString()!);
 
-            var role = result.Value.GetProperty("role").GetString();
+            // Get the role using the correct property name (capital "Role")
+            var role = result.Value.GetProperty("Role").GetString();
 
             return role == "Admin"
                 ? RedirectToAction("Dashboard", "Admin")
