@@ -19,18 +19,18 @@ namespace PROGPOE.Controllers
 
             return View(new AdminDashboardViewModel
             {
-                TotalContracts  = GetInt((JsonElement)data, "totalContracts"),
+                TotalContracts = GetInt((JsonElement)data, "totalContracts"),
                 ActiveContracts = GetInt((JsonElement)data, "activeContracts"),
                 PendingRequests = GetInt((JsonElement)data, "pendingRequests"),
-                TotalClients    = GetInt((JsonElement)data, "totalClients")
+                TotalClients = GetInt((JsonElement)data, "totalClients")
             });
         }
 
         // ── Contracts list ───────────────────────────────────────────────────
         public async Task<IActionResult> Contracts(
             DateTime? startDate = null,
-            DateTime? endDate   = null,
-            string?   status    = null)
+            DateTime? endDate = null,
+            string? status = null)
         {
             var data = await _api.GetContractsAsync(
                 startDate?.ToString("yyyy-MM-dd"),
@@ -57,10 +57,10 @@ namespace PROGPOE.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateContract(
-            string    clientId,
-            string    startDate,
-            string    endDate,
-            int       serviceLevel,
+            string clientId,
+            string startDate,
+            string endDate,
+            int serviceLevel,
             IFormFile? agreement)
         {
             var result = await _api.CreateContractAsync(clientId, startDate, endDate, serviceLevel, agreement);
@@ -145,17 +145,17 @@ namespace PROGPOE.Controllers
                     requests.Add(new ServiceRequestViewModel
                     {
                         ServiceRequestId = GetInt(item, "serviceRequestId"),
-                        RequestId        = GetString(item, "requestId"),
-                        Type             = GetString(item, "type"),
-                        ContractNumber   = GetString(item, "contractNumber"),
-                        ClientName       = GetString(item, "clientName"),
-                        Description      = GetString(item, "description"),
-                        Cost             = GetDecimal(item, "cost"),
-                        LocalCostZar     = GetDecimal(item, "localCostZar"),
-                        Status           = GetString(item, "status"),
-                        AdminNotes       = GetString(item, "adminNotes"),
-                        RequestDate      = GetDateTime(item, "requestDate"),
-                        DecisionDate     = GetNullableDateTime(item, "decisionDate")
+                        RequestId = GetString(item, "requestId"),
+                        Type = GetString(item, "type"),
+                        ContractNumber = GetString(item, "contractNumber"),
+                        ClientName = GetString(item, "clientName"),
+                        Description = GetString(item, "description"),
+                        Cost = GetDecimal(item, "cost"),
+                        LocalCostZar = GetDecimal(item, "localCostZar"),
+                        Status = GetString(item, "status"),
+                        AdminNotes = GetString(item, "adminNotes"),
+                        RequestDate = GetDateTime(item, "requestDate"),
+                        DecisionDate = GetNullableDateTime(item, "decisionDate")
                     });
 
             return View(requests);
@@ -183,6 +183,17 @@ namespace PROGPOE.Controllers
             return RedirectToAction(nameof(ServiceRequests));
         }
 
+        // ── POST /Admin/DeleteServiceRequest ─────────────────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteServiceRequest(int id)
+        {
+            var result = await _api.DeleteServiceRequestAsync(id);
+            TempData[result == null ? "Error" : "Success"] =
+                result == null ? "Failed to delete request." : "Request deleted.";
+            return RedirectToAction(nameof(ServiceRequests));
+        }
+
         // ── Helpers ──────────────────────────────────────────────────────────
         private async Task<List<ClientViewModel>> GetClientsListAsync()
         {
@@ -193,10 +204,10 @@ namespace PROGPOE.Controllers
                 foreach (var item in data.Value.EnumerateArray())
                     list.Add(new ClientViewModel
                     {
-                        Id       = GetString(item, "id"),
+                        Id = GetString(item, "id"),
                         FullName = GetString(item, "fullName"),
-                        Email    = GetString(item, "email"),
-                        Region   = GetString(item, "region")
+                        Email = GetString(item, "email"),
+                        Region = GetString(item, "region")
                     });
 
             return list;
@@ -204,15 +215,15 @@ namespace PROGPOE.Controllers
 
         private static ContractViewModel MapContract(JsonElement item) => new()
         {
-            ContractId     = GetInt(item, "contractId"),
+            ContractId = GetInt(item, "contractId"),
             ContractNumber = GetString(item, "contractNumber"),
-            StartDate      = GetDateTime(item, "startDate"),
-            EndDate        = GetDateTime(item, "endDate"),
-            Status         = GetString(item, "status"),
-            ServiceLevel   = GetString(item, "serviceLevel"),
-            ClientName     = GetString(item, "clientName"),
-            ClientId       = GetString(item, "clientId"),
-            HasAgreement   = GetBool(item, "hasAgreement")
+            StartDate = GetDateTime(item, "startDate"),
+            EndDate = GetDateTime(item, "endDate"),
+            Status = GetString(item, "status"),
+            ServiceLevel = GetString(item, "serviceLevel"),
+            ClientName = GetString(item, "clientName"),
+            ClientId = GetString(item, "clientId"),
+            HasAgreement = GetBool(item, "hasAgreement")
         };
 
         private static int GetInt(JsonElement el, string prop) =>
@@ -222,10 +233,10 @@ namespace PROGPOE.Controllers
             el.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
 
         private static DateTime GetDateTime(JsonElement el, string prop) =>
-            el.TryGetProperty(prop, out var v) && v.TryGetDateTime(out var dt) ? dt : DateTime.MinValue;
+            el.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.String && v.TryGetDateTime(out var dt) ? dt : DateTime.MinValue;
 
         private static DateTime? GetNullableDateTime(JsonElement el, string prop) =>
-            el.TryGetProperty(prop, out var v) && v.TryGetDateTime(out var dt) ? dt : null;
+            el.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.String && v.TryGetDateTime(out var dt) ? dt : (DateTime?)null;
 
         private static decimal? GetDecimal(JsonElement el, string prop) =>
             el.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetDecimal() : null;

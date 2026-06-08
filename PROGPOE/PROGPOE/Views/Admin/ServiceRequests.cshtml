@@ -67,16 +67,19 @@
                             <td class="d-flex gap-1">
                                 @if (r.Status == "Pending")
                                 {
-                                    <form method="post" action="/Admin/ServiceRequests/Approve" class="d-inline">
+                                    <form method="post" action="/Admin/ApproveRequest" class="d-inline">
+                                        @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@r.ServiceRequestId" />
                                         <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-check"></i></button>
                                     </form>
-                                    <form method="post" action="/Admin/ServiceRequests/Decline" class="d-inline">
+                                    <form method="post" action="/Admin/DeclineRequest" class="d-inline">
+                                        @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@r.ServiceRequestId" />
                                         <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
                                     </form>
                                 }
-                                <form method="post" action="/Admin/ServiceRequests/Delete" onsubmit="return confirm('Delete request @r.RequestId?')">
+                                <form method="post" action="/Admin/DeleteServiceRequest" onsubmit="return confirm('Delete request @r.RequestId?')">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@r.ServiceRequestId" />
                                     <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                                 </form>

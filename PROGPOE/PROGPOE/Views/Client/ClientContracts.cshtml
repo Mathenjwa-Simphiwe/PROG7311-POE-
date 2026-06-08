@@ -60,7 +60,8 @@
                     <div class="card-footer bg-transparent">
                         @if (c.Status == "Draft")
                         {
-                            <form method="post" action="/Client/ClientContracts/Sign" onsubmit="return confirm('Sign and activate contract @c.ContractNumber?');">
+                            <form method="post" action="/Client/SignContract" onsubmit="return confirm('Sign and activate contract @c.ContractNumber?');">
+                                @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@c.ContractId" />
                                 <button type="submit" class="btn btn-sm btn-success w-100">
                                     <i class="fas fa-signature me-2"></i>Sign & Activate

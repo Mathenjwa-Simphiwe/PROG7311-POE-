@@ -83,11 +83,12 @@ namespace PROGPOE.Controllers
 
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SignContract(int id)
         {
             var result = await _api.PatchContractStatusAsync(id, 1);
             if (result == null) TempData["Error"] = "Failed to activate contract.";
-            else TempData["Success"] = "Contract activated!";
+            else TempData["Success"] = "Contract signed and activated!";
             return RedirectToAction("ClientContracts");
         }
 
@@ -96,11 +97,19 @@ namespace PROGPOE.Controllers
         {
             var data = await _api.GetContractsAsync();
             var list = new List<object>();
-            if (data?.ValueKind == JsonValueKind.Array)
+            if (data?.ValueKind == System.Text.Json.JsonValueKind.Array)
             {
                 foreach (var item in data.Value.EnumerateArray())
                 {
-                    list.Add(new { contractId = GetInt(item, "contractId"), contractNumber = GetString(item, "contractNumber"), status = GetString(item, "status") });
+                    var status = GetString(item, "status");
+                    // Only show contracts a request can be raised against
+                    if (status == "Expired" || status == "Terminated") continue;
+                    list.Add(new
+                    {
+                        contractId = GetInt(item, "contractId"),
+                        contractNumber = GetString(item, "contractNumber"),
+                        status
+                    });
                 }
             }
             return Ok(list);
@@ -133,9 +142,9 @@ namespace PROGPOE.Controllers
         private static string GetString(JsonElement el, string prop) =>
             el.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
         private static DateTime GetDateTime(JsonElement el, string prop) =>
-            el.TryGetProperty(prop, out var v) && v.TryGetDateTime(out var dt) ? dt : DateTime.MinValue;
+            el.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.String && v.TryGetDateTime(out var dt) ? dt : DateTime.MinValue;
         private static DateTime? GetNullableDateTime(JsonElement el, string prop) =>
-            el.TryGetProperty(prop, out var v) && v.TryGetDateTime(out var dt) ? dt : null;
+            el.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.String && v.TryGetDateTime(out var dt) ? dt : (DateTime?)null;
         private static decimal? GetDecimal(JsonElement el, string prop) =>
             el.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetDecimal() : null;
         private static bool GetBool(JsonElement el, string prop) =>

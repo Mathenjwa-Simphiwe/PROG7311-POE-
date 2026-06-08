@@ -154,10 +154,21 @@
 <script>
     // Load contracts for the create dropdown
     async function loadContracts() {
-        const response = await fetch('/Client/Requests/GetContracts');
-        const contracts = await response.json();
         const sel = document.getElementById('contractId');
-        sel.innerHTML = contracts.map(c => `<option value="${c.contractId}">${c.contractNumber} (${c.status})</option>`).join('');
+        sel.innerHTML = '<option disabled>Loading contracts...</option>';
+        try {
+            const response = await fetch('/Client/GetContracts');
+            const contracts = await response.json();
+            if (contracts.length === 0) {
+                sel.innerHTML = '<option disabled value="">No eligible contracts found</option>';
+            } else {
+                sel.innerHTML = contracts.map(c =>
+                    `<option value="${c.contractId}">${c.contractNumber} (${c.status})</option>`
+                ).join('');
+            }
+        } catch (e) {
+            sel.innerHTML = '<option disabled value="">Error loading contracts</option>';
+        }
     }
 
     function toggleFields() {
@@ -174,18 +185,19 @@
     }
 
     async function submitCreate() {
+        const typeVal = parseInt(document.getElementById('requestType').value);
         const data = {
-            contractId: parseInt(document.getElementById('contractId').value),
-            type: parseInt(document.getElementById('requestType').value),
-            origin: document.getElementById('origin').value,
-            description: document.getElementById('description').value,
-            destination: document.getElementById('destination').value,
-            weightKg: parseFloat(document.getElementById('weight').value) || null,
-            equipmentType: document.getElementById('equipment').value,
-            estimatedHours: parseInt(document.getElementById('hours').value) || null,
-            usdAmount: parseFloat(document.getElementById('usdAmount').value) || null
+            contractId:     parseInt(document.getElementById('contractId').value),
+            type:           typeVal,
+            origin:         document.getElementById('origin').value,
+            description:    document.getElementById('description').value,
+            destination:    typeVal === 0 ? document.getElementById('destination').value : null,
+            weightKg:       typeVal === 0 ? (parseFloat(document.getElementById('weight').value) || null) : null,
+            equipmentType:  typeVal === 1 ? document.getElementById('equipment').value : null,
+            estimatedHours: typeVal === 1 ? (parseInt(document.getElementById('hours').value) || null) : null,
+            usdAmount:      parseFloat(document.getElementById('usdAmount').value) || null
         };
-        const response = await fetch('/Client/Requests/Create', {
+        const response = await fetch('/Client/Create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value },
             body: JSON.stringify(data)
@@ -210,7 +222,7 @@
             origin: document.getElementById('editOrigin').value,
             description: document.getElementById('editDescription').value
         };
-        const response = await fetch(`/Client/Requests/Edit/${id}`, {
+        const response = await fetch(`/Client/Edit/${id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]') },
             body: JSON.stringify(data)
@@ -221,7 +233,7 @@
 
     async function deleteRequest(id, reqId) {
         if (!confirm(`Cancel request ${reqId}?`)) return;
-        const response = await fetch(`/Client/Requests/Delete/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]') } });
+        const response = await fetch(`/Client/Delete/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value } });
         if (response.ok) location.reload();
         else alert('Error deleting request');
     }
