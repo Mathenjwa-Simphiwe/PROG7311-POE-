@@ -2,30 +2,29 @@ using PROGPOE.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ─── SESSION (stores JWT token received from TechMoveAPI) ──────────────────
+// ─── SESSION ──────────────────────────────────────────────────────────────
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(o =>
 {
-    o.IdleTimeout        = TimeSpan.FromHours(3);
-    o.Cookie.HttpOnly    = true;
+    o.IdleTimeout = TimeSpan.FromHours(3);
+    o.Cookie.HttpOnly = true;
     o.Cookie.IsEssential = true;
+    o.Cookie.SecurePolicy = CookieSecurePolicy.None; // allow HTTP in Docker
 });
 builder.Services.AddHttpContextAccessor();
 
-// ─── HTTP CLIENT → TECHMOVEAPI ─────────────────────────────────────────────
-// Set the BaseAddress to wherever TechMoveAPI is running.
-// In development both projects share the same solution; TechMoveAPI typically
-// runs on https://localhost:7001 (check its launchSettings.json).
+// ─── HTTP CLIENT → TECH MOVE API ─────────────────────────────────────────
+// Read base URL from configuration (environment variable TechMoveApi__BaseUrl)
+var apiBaseUrl = builder.Configuration["TechMoveApi:BaseUrl"]
+    ?? throw new InvalidOperationException("TechMoveApi:BaseUrl is not configured.");
 builder.Services.AddHttpClient<TechMoveApiService>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7254/");
+    client.BaseAddress = new Uri(apiBaseUrl);
 });
 
-// ─── MVC ──────────────────────────────────────────────────────────────────
+// ─── MVC ─────────────────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
 
-
-// ─── BUILD ────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -38,11 +37,11 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-app.UseSession();         // must come before MapControllerRoute
+app.UseSession();
 app.UseAuthorization();
 
 app.MapControllerRoute(
-    name:    "default",
+    name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

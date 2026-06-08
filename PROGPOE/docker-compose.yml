@@ -1,8 +1,5 @@
-version: "3.9"
-
 services:
 
-  # ── Container 1: SQL Server Database ──────────────────────────────────────
   sql-server-db:
     image: mcr.microsoft.com/mssql/server:2019-latest
     container_name: sql-server-db
@@ -19,22 +16,19 @@ services:
       - glms-network
     mem_limit: 1500m
     healthcheck:
-      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost",
-             "-U", "sa", "-P", "GLMS_Strong@Pass1", "-Q", "SELECT 1"]
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "GLMS_Strong@Pass1", "-Q", "SELECT 1"]
       interval: 15s
-      timeout: 10s
-      retries: 10
-      start_period: 45s
+      timeout: 15s
+      retries: 20
+      start_period: 90s
 
-  # ── Container 2: TechMove Web API (Backend) ────────────────────────────────
   glms-backend-api:
     build:
       context: .
       dockerfile: Dockerfile.api
     container_name: glms-backend-api
     depends_on:
-      sql-server-db:
-        condition: service_healthy
+      - sql-server-db
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
@@ -50,22 +44,14 @@ services:
       - api-uploads:/app/uploads
     networks:
       - glms-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/swagger/v1/swagger.json || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
 
-  # ── Container 3: PROGPOE MVC App (Frontend) ────────────────────────────────
   glms-frontend-web:
     build:
       context: .
       dockerfile: Dockerfile.mvc
     container_name: glms-frontend-web
     depends_on:
-      glms-backend-api:
-        condition: service_healthy
+      - glms-backend-api   # ✅ no condition
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
@@ -75,12 +61,10 @@ services:
     networks:
       - glms-network
 
-# ── Named Volumes ──────────────────────────────────────────────────────────────
 volumes:
   sqldata:
   api-uploads:
 
-# ── Internal Network ──────────────────────────────────────────────────────────
 networks:
   glms-network:
     driver: bridge

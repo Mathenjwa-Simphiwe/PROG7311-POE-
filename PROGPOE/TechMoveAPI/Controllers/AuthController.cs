@@ -17,16 +17,13 @@ namespace TechMoveAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserManager<Client> _clientManager;
-        private readonly UserManager<Admin>  _adminManager;
         private readonly IConfiguration      _config;
 
         public AuthController(
             UserManager<Client> clientManager,
-            UserManager<Admin>  adminManager,
             IConfiguration      config)
         {
             _clientManager = clientManager;
-            _adminManager  = adminManager;
             _config        = config;
         }
 
@@ -42,27 +39,16 @@ namespace TechMoveAPI.Controllers
         [ProducesResponseType(401)]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            // Try Admin first
-            var admin = await _adminManager.FindByEmailAsync(dto.Email);
-            if (admin != null && await _adminManager.CheckPasswordAsync(admin, dto.Password))
-            {
-                return Ok(new
-                {
-                    Token    = BuildToken(admin.Id, "Admin"),
-                    Role     = "Admin",
-                    FullName = admin.FullName,
-                    UserId   = admin.Id
-                });
-            }
-
-            // Then try Client
             var client = await _clientManager.FindByEmailAsync(dto.Email);
             if (client != null && await _clientManager.CheckPasswordAsync(client, dto.Password))
             {
+                var roles = await _clientManager.GetRolesAsync(client);
+                var role = roles.Contains("Admin") ? "Admin" : "Client";
+
                 return Ok(new
                 {
-                    Token    = BuildToken(client.Id, "Client"),
-                    Role     = "Client",
+                    Token    = BuildToken(client.Id, role),
+                    Role     = role,
                     FullName = client.FullName,
                     UserId   = client.Id
                 });

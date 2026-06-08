@@ -22,11 +22,16 @@ if (useInMemory)
 }
 else
 {
-    builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(connectionString));
+    builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlServer(
+        connectionString,
+        sql => sql.EnableRetryOnFailure(10, TimeSpan.FromSeconds(10), null)));
     Console.WriteLine("[TechMoveAPI] USING SQL SERVER DATABASE");
 }
 
 // ─── IDENTITY ──────────────────────────────────────────────────────────────
+// Single Identity registration using Client as the base user type.
+// Admins are seeded as Client users with the "Admin" role assigned.
+// This avoids the AddIdentityCore<Admin> conflict that breaks AddToRoleAsync.
 builder.Services.AddIdentity<Client, IdentityRole>(o =>
 {
     o.Password.RequireDigit = true;
@@ -36,38 +41,32 @@ builder.Services.AddIdentity<Client, IdentityRole>(o =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
-builder.Services.AddIdentityCore<Admin>()
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
-
 // ─── JWT AUTHENTICATION ────────────────────────────────────────────────────
 var jwtKey = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
 builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    o.DefaultChallengeScheme    = JwtBearerDefaults.AuthenticationScheme;
+    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(o =>
 {
     o.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer           = true,
-        ValidateAudience         = true,
-        ValidateLifetime         = true,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer              = builder.Configuration["Jwt:Issuer"],
-        ValidAudience            = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey         = new SymmetricSecurityKey(jwtKey)
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(jwtKey)
     };
 });
 
 // ─── CORS (allows PROGPOE MVC frontend to call this API) ──────────────────
 builder.Services.AddCors(o => o.AddPolicy("MvcFrontend", p =>
-    p.WithOrigins("https://localhost:7000", "http://localhost:5000", "https://localhost:7244")
+    p.AllowAnyOrigin()
      .AllowAnyHeader()
-     .AllowAnyMethod()
-     .AllowCredentials()));
+     .AllowAnyMethod()));
 
 // ─── SERVICES ──────────────────────────────────────────────────────────────
 builder.Services.AddScoped<CurrencyConverter>();
@@ -85,8 +84,8 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title       = "TechMove GLMS API",
-        Version     = "v1",
+        Title = "TechMove GLMS API",
+        Version = "v1",
         Description = "Global Logistics Management System REST API.\n\n" +
                       "**How to authenticate:**\n" +
                       "1. POST `/api/auth/login` with `{\"email\":\"admin@glms.com\",\"password\":\"Admin@123\"}`\n" +
@@ -94,14 +93,13 @@ builder.Services.AddSwaggerGen(c =>
                       "3. Click **Authorize** and enter: `Bearer {token}`"
     });
 
-    // JWT Bearer button in Swagger UI
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Name        = "Authorization",
-        Type        = SecuritySchemeType.Http,
-        Scheme      = "Bearer",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
         BearerFormat = "JWT",
-        In          = ParameterLocation.Header,
+        In = ParameterLocation.Header,
         Description = "Enter your JWT token. Example: Bearer eyJhbGci..."
     });
 
@@ -110,11 +108,7 @@ builder.Services.AddSwaggerGen(c =>
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id   = "Bearer"
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
             Array.Empty<string>()
         }
@@ -128,8 +122,8 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "TechMove GLMS API v1");
-    c.RoutePrefix    = "swagger";
-    c.DocumentTitle  = "TechMove API";
+    c.RoutePrefix = "swagger";
+    c.DocumentTitle = "TechMove API";
 });
 
 app.UseHttpsRedirection();
@@ -141,42 +135,80 @@ app.MapControllers();
 // ─── SEED DATABASE ─────────────────────────────────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var rm = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var am = scope.ServiceProvider.GetRequiredService<UserManager<Admin>>();
-    var cm = scope.ServiceProvider.GetRequiredService<UserManager<Client>>();
-
-    await db.Database.EnsureCreatedAsync();
-
-    foreach (var role in new[] { "Admin", "Client" })
-        if (!await rm.RoleExistsAsync(role))
-            await rm.CreateAsync(new IdentityRole(role));
-
-    if (await am.FindByEmailAsync("admin@glms.com") == null)
+    try
     {
-        var admin = new Admin
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var rm = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var um = scope.ServiceProvider.GetRequiredService<UserManager<Client>>();
+
+        await db.Database.EnsureCreatedAsync();
+
+        // 1. Create roles
+        foreach (var role in new[] { "Admin", "Client" })
+            if (!await rm.RoleExistsAsync(role))
+                await rm.CreateAsync(new IdentityRole(role));
+
+        // 2. Seed or repair admin user (stored as a Client user with "Admin" role)
+        var admin = await um.FindByEmailAsync("admin@glms.com");
+        if (admin == null)
         {
-            UserName   = "admin@glms.com",
-            Email      = "admin@glms.com",
-            FullName   = "System Admin",
-            Department = "IT"
-        };
-        await am.CreateAsync(admin, "Admin@123");
-        await am.AddToRoleAsync(admin, "Admin");
+            admin = new Client
+            {
+                UserName = "admin@glms.com",
+                Email = "admin@glms.com",
+                FullName = "System Admin",
+                Region = "Admin"
+            };
+            var result = await um.CreateAsync(admin, "Admin@123");
+            if (!result.Succeeded)
+                Console.WriteLine("[SEED] Admin create failed: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+        }
+        else
+        {
+            admin.FullName = "System Admin";
+            admin.Region = "Admin";
+            admin.EmailConfirmed = true;
+            await um.UpdateAsync(admin);
+
+            if (!await um.CheckPasswordAsync(admin, "Admin@123"))
+            {
+                if (await um.HasPasswordAsync(admin))
+                    await um.RemovePasswordAsync(admin);
+
+                var passwordResult = await um.AddPasswordAsync(admin, "Admin@123");
+                if (!passwordResult.Succeeded)
+                    Console.WriteLine("[SEED] Admin password reset failed: " + string.Join(", ", passwordResult.Errors.Select(e => e.Description)));
+            }
+        }
+
+        if (admin != null && !await um.IsInRoleAsync(admin, "Admin"))
+            await um.AddToRoleAsync(admin, "Admin");
+
+        // 3. Seed test client
+        if (await um.FindByEmailAsync("client@test.com") == null)
+        {
+            var client = new Client
+            {
+                UserName = "client@test.com",
+                Email = "client@test.com",
+                FullName = "Test Client",
+                Region = "South Africa"
+            };
+            var result = await um.CreateAsync(client, "Client@123");
+            if (result.Succeeded)
+                await um.AddToRoleAsync(client, "Client");
+            else
+                Console.WriteLine("[SEED] Client create failed: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+        }
+
+        Console.WriteLine("[SEED] Database seeded successfully.");
     }
-
-    if (await cm.FindByEmailAsync("client@test.com") == null)
+    catch (Exception ex)
     {
-        var client = new Client
-        {
-            UserName = "client@test.com",
-            Email    = "client@test.com",
-            FullName = "Test Client",
-            Region   = "North America"
-        };
-        await cm.CreateAsync(client, "Client@123");
-        await cm.AddToRoleAsync(client, "Client");
+        Console.WriteLine($"[SEED ERROR] {ex.Message}");
     }
 }
 
 app.Run();
+
+public partial class Program { }
